@@ -301,3 +301,10 @@ const verify_reset_password = [
     )
 ]
 
+module.exports = {
+    login,
+    register,
+    verify_email,
+    verify_reset_password,
+    reset_password
+}
