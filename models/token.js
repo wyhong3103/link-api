@@ -11,6 +11,10 @@ const TokenSchema = new Schema(
             type : String,
             required : true,
         },
+        user : {
+            type : Schema.Types.ObjectId,
+            ref : "User"
+        },
         expiresAt: { type: Date, default: Date.now },
     }
 )

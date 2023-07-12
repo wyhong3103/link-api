@@ -22,7 +22,7 @@ const login = [
                 const errorMessages = err.array().map(error => {
                     return { field: error.param, message: error.msg };
                 });
-                logger(`Login details did not pass validation - ${errorMessages}`);
+                logger(`Login details did not pass validation`);
                 res.status(401).json({
                     status : false,
                     error : errorMessages
@@ -48,6 +48,7 @@ const login = [
                 const token = new Token({
                     token : refreshToken,
                     token_type : 'refresh',
+                    user : user._id,
                     expiresAt : new Date(Date.now() + (30 * 24 * 60 * 60 * 1000))
                 })
 
@@ -142,7 +143,7 @@ const register = [
                 const errorMessages = err.array().map(error => {
                     return { field: error.param, message: error.msg };
                 });
-                logger(`Registration details did not pass the validation. - ${errorMessages}`)
+                logger(`Registration details did not pass the validation.`)
                 res.status(400).json({
                      status : false,
                      error: errorMessages 
@@ -253,6 +254,7 @@ const reset_password = asyncHandler(
             {
                 token : resetToken,
                 token_type : 'reset',
+                user : user._id,
                 expiresAt : new Date(Date.now() + (20 * 60 * 1000))
             }
         )
@@ -283,7 +285,7 @@ const verify_reset_password = [
                 const errorMessages = err.array().map(error => {
                     return { field: error.param, message: error.msg };
                 });
-                logger(`Reset password details did not pass the validation. - ${errorMessages}`)
+                logger(`Reset password details did not pass the validation.`)
                 res.status(400).json({
                      status : false,
                      error: errorMessages 
@@ -304,8 +306,8 @@ const verify_reset_password = [
                 return;
             }
 
-            await Token.findByIdAndDelete(token._id);
-            logger('Reset token is destroyed.');
+            await Token.deleteMany({user : decoded.userid});
+            logger('All old tokens associated with user is destroyed.');
 
             const user = await User.findById(decoded.userid).exec();
 
