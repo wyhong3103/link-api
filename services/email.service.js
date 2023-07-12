@@ -28,4 +28,25 @@ const sendVerificationEmail = async (to, token) => {
     }
 }
 
-console.log(sendVerificationEmail('a@a.com','1234'));
+const sendPasswordResetEmail = async (to, token) => {
+    try{
+        const mailOptions = {
+            from: process.env.SERVICE_EMAIL,
+            to: to,
+            subject: 'Password Reset On Link',
+            text: `Click the link below to reset your password.\n ${process.env.CLIENT_URL}'/verify-reset-password?token=${token}`
+        };
+
+        await transporter.sendMail(mailOptions);
+        return true
+    }catch (err) {
+        console.log(err);
+        return false
+    }
+}
+
+
+module.exports = {
+    sendVerificationEmail,
+    sendPasswordResetEmail
+}
