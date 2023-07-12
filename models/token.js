@@ -11,8 +11,11 @@ const TokenSchema = new Schema(
             type : String,
             required : true,
             enum : ['refresh', 'email', 'password']
-        }
+        },
+        expiresAt: { type: Date, default: Date.now },
     }
 )
+
+TokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 module.exports = mongoose.model('Token', TokenSchema);
