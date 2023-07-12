@@ -20,7 +20,28 @@ const generateToken = (obj, type) => {
     }
 };
 
+const verifyToken = (token, type) => {
+    try{
+        if (type === 'access'){
+            return jwt.verify(obj, process.env.ACCESS_SECRET);
+        }
+        else if (type === 'refresh'){
+            return jwt.verify(obj, process.env.REFRESH_SECRET);
+        }
+        else if (type === 'email'){
+            return jwt.verify(obj, process.env.EMAIL_SECRET);
+        }else{
+            return jwt.verify(obj, process.env.PASSWORD_SECRET);
+        }
+    }
+    catch {
+        return false;
+    }
+}
+
 
 module.exports = {
-    verifyPassword
+    verifyPassword,
+    generateToken,
+    verifyToken
 }
