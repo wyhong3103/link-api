@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Token = require('../models/token');
 const asyncHandler = require('express-async-handler')
 const authService = require('../services/auth.service');
 const { body, validationResult } = require('express-validator');
@@ -52,3 +53,36 @@ const login = [
         }
     )
 ]
+
+
+const refresh = asyncHandler(
+    async (req, res) => {
+        if (req.cookies.hasOwnProperty('refreshToken')){
+            const token = req.cookies.refreshToken;
+
+            const decoded = authService.verifyToken(token, 'refresh');
+
+            const tokenExist = await Token.findOne({token : token}).exec();
+
+            if (!decoded || tokenExist === null){
+                res.status(403).json({
+                    status : false,
+                    error : ['Refresh token is invalid']
+                })
+            }
+
+            res.json(
+                {
+                    userid : decoded.userid,
+                    accessToken : authService.generateToken({userid : decoded.userid}, 'access'),
+                }
+            )
+        }else{
+            res.status(403).json({
+                status : false,
+                error : ['Refresh token not found.']
+            })
+        }
+    }
+)
+
