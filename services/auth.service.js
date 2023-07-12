@@ -10,6 +10,12 @@ const verifyPassword = (input, password) => {
     return bcrypt.compareSync(input, password);
 };
 
+/*
+
+email token - user object
+the rest - user id
+
+*/
 const generateToken = (obj, type) => {
     if (type === 'access'){
         return jwt.sign(obj, process.env.ACCESS_SECRET, {expiresIn : '1h'});
