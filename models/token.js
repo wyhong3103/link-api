@@ -10,7 +10,6 @@ const TokenSchema = new Schema(
         token_type : {
             type : String,
             required : true,
-            enum : ['refresh', 'email', 'password']
         },
         expiresAt: { type: Date, default: Date.now },
     }
