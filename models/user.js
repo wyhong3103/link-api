@@ -3,16 +3,21 @@ const Schema = mongoose.Schema;
 
 const UserSchema = new Schema(
     {
-        username : {
-            type : String,
-            maxLength : 256,
-            required : true
-        },
         email : {
             type : String,
             required : true 
         },
         password : {
+            type : String,
+            maxLength : 256,
+            required : true
+        },
+        first_name : {
+            type : String,
+            maxLength : 256,
+            required : true
+        },
+        last_name : {
             type : String,
             maxLength : 256,
             required : true
