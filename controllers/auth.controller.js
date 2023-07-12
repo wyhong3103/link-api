@@ -1,4 +1,4 @@
-const logger = require('debug')('auth-controller')
+const logger = require('debug')('link-api:auth-controller')
 const User = require('../models/user');
 const Token = require('../models/token');
 const asyncHandler = require('express-async-handler')
@@ -19,7 +19,7 @@ const login = [
             const err = validationResult(req);
 
             if (!err.isEmpty()){
-                const errorMessages = errors.array().map(error => {
+                const errorMessages = err.array().map(error => {
                     return { field: error.param, message: error.msg };
                 });
                 logger(`Login details did not pass validation - ${errorMessages}`);
@@ -46,7 +46,7 @@ const login = [
                 const refreshToken = authService.generateToken({userid : user._id}, 'refresh');
 
                 const token = new Token({
-                    token : token,
+                    token : refreshToken,
                     token_type : 'refresh',
                     expiresAt : new Date(Date.now() + (30 * 24 * 60 * 60 * 1000))
                 })
@@ -90,6 +90,7 @@ const refresh = asyncHandler(
                     status : false,
                     error : [{ 'result' : 'Refresh token is invalid'}]
                 })
+                return;
             }
 
             logger('New access token is generated and sent to user.')
@@ -138,7 +139,7 @@ const register = [
             const err = validationResult(req);
             
             if (!err.isEmpty()){
-                const errorMessages = errors.array().map(error => {
+                const errorMessages = err.array().map(error => {
                     return { field: error.param, message: error.msg };
                 });
                 logger(`Registration details did not pass the validation. - ${errorMessages}`)
@@ -177,6 +178,7 @@ const register = [
                     status : false,
                     error : [{result : 'Something went wrong, please try again later.'}]
                 })
+                return;
             }
             logger('Verification email is sent.');
 
@@ -200,6 +202,7 @@ const verify_email = asyncHandler(
                 status : false,
                 error : [{result : 'Token is invalid.'}]
             })
+            return;
         }
 
         const userExist = await User.findOne({email : decoded.email}).exec();
@@ -227,11 +230,11 @@ const reset_password = asyncHandler(
                 status : false,
                 error : [{result : 'Email is not found.'}]
             })
+            return;
         }
         
         logger('Email for reset is found.');
 
-        
         const resetToken = authService.generateToken({userid : user._id}, 'reset');
 
         const emailResetStatus = emailService.sendPasswordResetEmail(req.body.email, resetToken);
@@ -242,8 +245,20 @@ const reset_password = asyncHandler(
                 status : false,
                 error : [{result : 'Something went wrong, please try again later.'}]
             })
+            return;
         }
         logger('Reset email is sent.');
+
+        const token = new Token(
+            {
+                token : resetToken,
+                token_type : 'reset',
+                expiresAt : new Date(Date.now() + (20 * 60 * 1000))
+            }
+        )
+        await token.save();
+        logger('Reset token is saved to database');
+
 
         res.json({
             status : true,
@@ -265,7 +280,7 @@ const verify_reset_password = [
             const err = validationResult(req);
             
             if (!err.isEmpty()){
-                const errorMessages = errors.array().map(error => {
+                const errorMessages = err.array().map(error => {
                     return { field: error.param, message: error.msg };
                 });
                 logger(`Reset password details did not pass the validation. - ${errorMessages}`)
@@ -278,13 +293,19 @@ const verify_reset_password = [
 
             const decoded = authService.verifyToken(req.body.resetToken, 'reset');
 
-            if (!decoded){
+            const token = await Token.findOne({token : req.body.resetToken}).exec();
+
+            if (!decoded || token === null){
                 logger('Reset token is invalid.');
                 res.status(403).json({
                     status : false,
                     error : [{result : 'Token is invalid.'}]
                 })
+                return;
             }
+
+            await Token.findByIdAndDelete(token._id);
+            logger('Reset token is destroyed.');
 
             const user = await User.findById(decoded.userid).exec();
 
@@ -303,6 +324,7 @@ const verify_reset_password = [
 
 module.exports = {
     login,
+    refresh,
     register,
     verify_email,
     verify_reset_password,
