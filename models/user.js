@@ -40,7 +40,10 @@ const UserSchema = new Schema(
                 ref : 'Post'
             }
         ],
-        image : String
+        image : {
+            type : Boolean,
+            required : true
+        }
     }
 )
 
