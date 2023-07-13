@@ -34,7 +34,7 @@ const login = [
 
             if (user === null){
                 logger('Email is not found.');
-                res.status(401).json({
+                res.status(404).json({
                     status : false,
                     error : [{ result : 'Email not found.'}]
                 })
@@ -87,7 +87,7 @@ const refresh = asyncHandler(
             if (!result.status || tokenExist === null){
                 if (!result.status) logger(`Refresh token is ${result.error}.`);
                 if (tokenExist === null) logger('Refresh token is not found in the database.');
-                res.status(403).json({
+                res.status(404).json({
                     status : false,
                     error : [{ 'result' : 'Refresh token is invalid'}]
                 })
@@ -105,7 +105,7 @@ const refresh = asyncHandler(
         }else{
             logger('Refresh token is not found in the cookies.')
 
-            res.status(403).json({
+            res.status(404).json({
                 status : false,
                 error : [{ 'result' : 'Refresh token is invalid'}]
             })
@@ -227,7 +227,7 @@ const reset_password = asyncHandler(
 
         if (user === null){
             logger('Email for reset is not found.');
-            res.status(403).json({
+            res.status(404).json({
                 status : false,
                 error : [{result : 'Email is not found.'}]
             })
@@ -299,7 +299,7 @@ const verify_reset_password = [
 
             if (!result.status || token === null){
                 logger(`Reset token is ${result.error}.`);
-                res.status(403).json({
+                res.status(404).json({
                     status : false,
                     error : [{result : `Token is ${result.error}.`}]
                 })
