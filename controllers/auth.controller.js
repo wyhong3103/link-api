@@ -22,7 +22,7 @@ const login = [
                 const errorMessages = {};
                 
                 for(const i of err.array()){
-                    errorMessages[i.param] = i.msg;
+                    errorMessages[i.path] = i.msg;
                 }
 
                 logger(`Login details did not pass validation`);
@@ -146,7 +146,7 @@ const register = [
                 const errorMessages = {};
                 
                 for(const i of err.array()){
-                    errorMessages[i.param] = i.msg;
+                    errorMessages[i.path] = i.msg;
                 }
 
                 logger(`Registration details did not pass the validation.`)
@@ -173,6 +173,7 @@ const register = [
                 password : authService.hashPassword(req.body.password),
                 first_name : req.body.first_name,
                 last_name : req.body.last_name,
+                image : false
             };
             
             const emailToken = authService.generateToken(user, 'email');
@@ -291,7 +292,7 @@ const verify_reset_password = [
                 const errorMessages = {};
                 
                 for(const i of err.array()){
-                    errorMessages[i.param] = i.msg;
+                    errorMessages[i.path] = i.msg;
                 }
 
                 logger(`Reset password details did not pass the validation.`)
