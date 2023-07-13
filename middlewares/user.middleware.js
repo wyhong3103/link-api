@@ -7,7 +7,7 @@ const authorizeUser = (req, res, next) => {
             res.status(403).json({
                 status : false,
                 token : result.error,
-                error : [{result : `Token is ${result.error}.`}]
+                error : {result : `Token is ${result.error}.`}
             })
         }else{
             req.userid = result.decoded.userid;
@@ -16,7 +16,7 @@ const authorizeUser = (req, res, next) => {
     }else {
         res.status(403).json({
             status : false,
-            error : [{result : 'Token is not found'}]
+            error : {result : 'Token is not found'}
         });
     }
 }
