@@ -80,12 +80,12 @@ const refresh = asyncHandler(
         if (req.cookies.hasOwnProperty('refreshToken')){
             const token = req.cookies.refreshToken;
 
-            const decoded = authService.verifyToken(token, 'refresh');
+            const result = authService.verifyToken(token, 'refresh');
 
             const tokenExist = await Token.findOne({token : token}).exec();
 
-            if (!decoded || tokenExist === null){
-                if (!decoded) logger('Refresh token is either expired or does not exist.');
+            if (!result.status || tokenExist === null){
+                if (!result.status) logger(`Refresh token is ${result.error}.`);
                 if (tokenExist === null) logger('Refresh token is not found in the database.');
                 res.status(403).json({
                     status : false,
@@ -98,8 +98,8 @@ const refresh = asyncHandler(
 
             res.json(
                 {
-                    userid : decoded.userid,
-                    accessToken : authService.generateToken({userid : decoded.userid}, 'access'),
+                    userid : result.decoded.userid,
+                    accessToken : authService.generateToken({userid : result.decoded.userid}, 'access'),
                 }
             )
         }else{
@@ -195,21 +195,21 @@ const verify_email = asyncHandler(
     async (req, res) => {
         const emailToken = req.body.emailToken;
 
-        const decoded = authService.verifyToken(emailToken, 'email');
+        const result = authService.verifyToken(emailToken, 'email');
         
-        if (!decoded){
-            logger('Email token is invalid.');
+        if (!result.status){
+            logger(`Email token is ${result.error}.`);
             res.status(403).json({
                 status : false,
-                error : [{result : 'Token is invalid.'}]
+                error : [{result : `Token is ${result.error}.`}]
             })
             return;
         }
 
-        const userExist = await User.findOne({email : decoded.email}).exec();
+        const userExist = await User.findOne({email : result.decoded.email}).exec();
 
         if (userExist === null){
-            const user = new User(decoded);
+            const user = new User(result.decoded);
             await user.save();
         }
         logger('User is verified.');
@@ -293,23 +293,23 @@ const verify_reset_password = [
                 return;
             }
 
-            const decoded = authService.verifyToken(req.body.resetToken, 'reset');
+            const result = authService.verifyToken(req.body.resetToken, 'reset');
 
             const token = await Token.findOne({token : req.body.resetToken}).exec();
 
-            if (!decoded || token === null){
-                logger('Reset token is invalid.');
+            if (!result.status || token === null){
+                logger(`Reset token is ${result.error}.`);
                 res.status(403).json({
                     status : false,
-                    error : [{result : 'Token is invalid.'}]
+                    error : [{result : `Token is ${result.error}.`}]
                 })
                 return;
             }
 
-            await Token.deleteMany({user : decoded.userid});
+            await Token.deleteMany({user : result.decoded.userid});
             logger('All old tokens associated with user is destroyed.');
 
-            const user = await User.findById(decoded.userid).exec();
+            const user = await User.findById(result.decoded.userid).exec();
 
             user.password = authService.hashPassword(req.body.password);
 

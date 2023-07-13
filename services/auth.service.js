@@ -31,21 +31,29 @@ const generateToken = (obj, type) => {
 };
 
 const verifyToken = (token, type) => {
+    const ret = {status : true};
     try{
         if (type === 'access'){
-            return jwt.verify(token, process.env.ACCESS_SECRET);
+            ret.decoded = jwt.verify(token, process.env.ACCESS_SECRET);
         }
         else if (type === 'refresh'){
-            return jwt.verify(token, process.env.REFRESH_SECRET);
+            ret.decoded = jwt.verify(token, process.env.REFRESH_SECRET);
         }
         else if (type === 'email'){
-            return jwt.verify(token, process.env.EMAIL_SECRET);
+            ret.decoded = jwt.verify(token, process.env.EMAIL_SECRET);
         }else{
-            return jwt.verify(token, process.env.PASSWORD_SECRET);
+            ret.decoded = jwt.verify(token, process.env.PASSWORD_SECRET);
         }
+        return ret;
     }
-    catch {
-        return false;
+    catch (err) {
+        ret.status = false;
+        if (err.name === 'TokenExpiredError') {
+            ret.error = 'expired';
+        }else{
+            ret.error = 'invalid';
+        }
+        return ret;
     }
 }
 
