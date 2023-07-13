@@ -19,9 +19,12 @@ const login = [
             const err = validationResult(req);
 
             if (!err.isEmpty()){
-                const errorMessages = err.array().map(error => {
-                    return { field: error.param, message: error.msg };
-                });
+                const errorMessages = {};
+                
+                for(const i of err.array()){
+                    errorMessages[i.param] = i.msg;
+                }
+
                 logger(`Login details did not pass validation`);
                 res.status(401).json({
                     status : false,
@@ -36,7 +39,7 @@ const login = [
                 logger('Email is not found.');
                 res.status(404).json({
                     status : false,
-                    error : [{ result : 'Email not found.'}]
+                    error : { result : 'Email not found.'}
                 })
                 return;
             }
@@ -66,7 +69,7 @@ const login = [
                 res.status(401).json(
                     {
                         status : false,
-                        error : [{result : 'Password does not match.'}]
+                        error : {result : 'Password does not match.'}
                     }
                 )
             }
@@ -89,7 +92,7 @@ const refresh = asyncHandler(
                 if (tokenExist === null) logger('Refresh token is not found in the database.');
                 res.status(404).json({
                     status : false,
-                    error : [{ 'result' : 'Refresh token is invalid'}]
+                    error : { result : 'Refresh token is invalid'}
                 })
                 return;
             }
@@ -107,7 +110,7 @@ const refresh = asyncHandler(
 
             res.status(404).json({
                 status : false,
-                error : [{ 'result' : 'Refresh token is invalid'}]
+                error : { result : 'Refresh token is invalid'}
             })
         }
     }
@@ -140,9 +143,12 @@ const register = [
             const err = validationResult(req);
             
             if (!err.isEmpty()){
-                const errorMessages = err.array().map(error => {
-                    return { field: error.param, message: error.msg };
-                });
+                const errorMessages = {};
+                
+                for(const i of err.array()){
+                    errorMessages[i.param] = i.msg;
+                }
+
                 logger(`Registration details did not pass the validation.`)
                 res.status(400).json({
                      status : false,
@@ -157,7 +163,7 @@ const register = [
                 logger('Email already exist.')
                 res.status(400).json({
                      status : false,
-                     error: [{ email : 'Email already exist.'}]
+                     error: { email : 'Email already exist.'}
                 });
                 return;
             }
@@ -177,7 +183,7 @@ const register = [
                 logger('Verification email is not sent.')
                 res.status(400).json({
                     status : false,
-                    error : [{result : 'Something went wrong, please try again later.'}]
+                    error : {result : 'Something went wrong, please try again later.'}
                 })
                 return;
             }
@@ -201,7 +207,7 @@ const verify_email = asyncHandler(
             logger(`Email token is ${result.error}.`);
             res.status(403).json({
                 status : false,
-                error : [{result : `Token is ${result.error}.`}]
+                error : {result : `Token is ${result.error}.`}
             })
             return;
         }
@@ -229,7 +235,7 @@ const reset_password = asyncHandler(
             logger('Email for reset is not found.');
             res.status(404).json({
                 status : false,
-                error : [{result : 'Email is not found.'}]
+                error : {result : 'Email is not found.'}
             })
             return;
         }
@@ -244,7 +250,7 @@ const reset_password = asyncHandler(
             logger('Reset email is not sent.')
             res.status(400).json({
                 status : false,
-                error : [{result : 'Something went wrong, please try again later.'}]
+                error : {result : 'Something went wrong, please try again later.'}
             })
             return;
         }
@@ -282,9 +288,12 @@ const verify_reset_password = [
             const err = validationResult(req);
             
             if (!err.isEmpty()){
-                const errorMessages = err.array().map(error => {
-                    return { field: error.param, message: error.msg };
-                });
+                const errorMessages = {};
+                
+                for(const i of err.array()){
+                    errorMessages[i.param] = i.msg;
+                }
+
                 logger(`Reset password details did not pass the validation.`)
                 res.status(400).json({
                      status : false,
@@ -301,7 +310,7 @@ const verify_reset_password = [
                 logger(`Reset token is ${result.error}.`);
                 res.status(404).json({
                     status : false,
-                    error : [{result : `Token is ${result.error}.`}]
+                    error : {result : `Token is ${result.error}.`}
                 })
                 return;
             }
