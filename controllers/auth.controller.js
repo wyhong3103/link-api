@@ -56,12 +56,13 @@ const login = [
                 })
 
                 await token.save();
-
+                
+                res.cookie('accessToken', authService.generateToken({userid : user._id}, 'access'), {maxAge : 3600000, httpOnly : true});
+                res.cookie('refreshToken',refreshToken, {maxAge : 720 * 3600000, httpOnly : true});
+                logger('Cookies are set.');
                 res.json(
                     {
                         userid : user._id,
-                        accessToken : authService.generateToken({userid : user._id}, 'access'),
-                        refreshToken : refreshToken
                     }
                 )
             }else{
@@ -97,12 +98,11 @@ const refresh = asyncHandler(
                 return;
             }
 
-            logger('New access token is generated and sent to user.')
-
+            logger('New access token is generated and set to cookie.')
+            res.cookie('accessToken', authService.generateToken({userid : result.decoded.userid}, 'access'), {maxAge : 3600000, httpOnly : true});
             res.json(
                 {
                     userid : result.decoded.userid,
-                    accessToken : authService.generateToken({userid : result.decoded.userid}, 'access'),
                 }
             )
         }else{
