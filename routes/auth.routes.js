@@ -30,7 +30,7 @@ Output :
 accessToken
 
 */
-router.post('/refresh', authController.refresh);
+router.get('/refresh', authController.refresh);
 
 /*
 
