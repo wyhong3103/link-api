@@ -14,6 +14,10 @@ router.post('/:userid/friend-request', userMiddleware.authorizeUser, userControl
 
 router.post('/:userid/friend-request/:friendid', userMiddleware.authorizeUser, userController.manage_friend_request);
 
+router.delete('/:userid/friend-request/:friendid', userMiddleware.authorizeUser, userController.delete_friend_request);
+
+router.delete('/:userid/friend/:friendid', userMiddleware.authorizeUser, userController.delete_friend);
+
 router.put('/:userid/password', userMiddleware.authorizeUser, userController.change_password);
 
 router.put('/:userid', userMiddleware.authorizeUser, upload.single('image') ,userController.update_user_info);
