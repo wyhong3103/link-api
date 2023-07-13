@@ -137,7 +137,7 @@ const register = [
     .withMessage('Password must be within 8 to 128 characters'),
     body('repassword')
     .custom((value, { req }) => value === req.body.password)
-    .withMessage('Password confirmation does not match.'),
+    .withMessage('Confirmation password does not match.'),
     asyncHandler(
         async (req, res) => {
             const err = validationResult(req);
