@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const authRouter = require('./auth');
-const userRouter = require('./user');
+const authRouter = require('./auth.routes');
+const userRouter = require('./user.routes');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
