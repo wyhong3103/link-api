@@ -12,14 +12,7 @@ body : {
 
 Output :
 
-if OK
-{
-    userid, accessToken, refreshToken
-}
-else
-{
-    error : []
-}
+userid, accessToken, refreshToken
 
 */
 router.post('/login', authController.login);
@@ -34,14 +27,8 @@ cookie : {
 
 Output :
 
-if OK
-{
-    accessToken
-}
-else
-{
-    error : []
-}
+accessToken
+
 */
 router.post('/refresh', authController.refresh);
 
@@ -53,16 +40,6 @@ body : {
     email, password, repassword, first_name, last_Name
 }
 
-Output :
-
-if OK
-{
-
-}
-else
-{
-    error : []
-}
 
 */
 router.post('/register', authController.register);
@@ -73,17 +50,6 @@ Input :
 
 body : {
     emailToken
-}
-
-Output :
-
-if OK
-{
-        
-}
-else
-{
-    error : []
 }
 
 */
@@ -97,16 +63,6 @@ body : {
     email
 }
 
-Output :
-
-if OK
-{
-        
-}
-else
-{
-    error : []
-}
 */
 router.post('/reset-password', authController.reset_password);
 
@@ -118,16 +74,6 @@ body : {
     resetToken, password, repassword
 }
 
-Output :
-
-if OK
-{
-        
-}
-else
-{
-    error : []
-}
 */
 router.post('/verify-reset-password', authController.verify_reset_password);
 
