@@ -282,6 +282,13 @@ const delete_friend_request = asyncHandler(
 
 const delete_friend = asyncHandler(
     async (req, res) => {
+        if (req.userid !== req.params.friendid && req.userid !== req.params.userid){
+            res.status(403).json({
+                status : false,
+                error : {result : 'No permission.'}
+            })
+            return;
+        }
         if (!mongoose.isValidObjectId(req.params.userid)){
             logger('User ID is invalid.');
             res.status(404).json({
@@ -359,6 +366,14 @@ const change_password = [
     .withMessage("Confirmation password does not match."),
     asyncHandler(
         async (req, res) => {
+            if (req.userid !== req.params.userid){
+                res.status(403).json({
+                    status : false,
+                    error : {result : 'No permission.', a : req.userid, x : req.originalUrl}
+                })
+                return;
+            }
+
             const err = validationResult(req);
 
             if (!err.isEmpty()){
@@ -374,7 +389,7 @@ const change_password = [
                      error: errorMessages 
                 });
                 return;
-            }
+            }        
 
             const user = await User.findById(req.userid).exec();
 
@@ -424,7 +439,14 @@ const update_user_info = [
     .escape(),
     asyncHandler(
         async (req, res) => {
-            
+            if (req.userid !== req.params.userid){
+                res.status(403).json({
+                    status : false,
+                    error : {result : 'No permission.', a : req.userid, x : req.originalUrl}
+                })
+                return;
+            }
+
             const user = await User.findById(req.userid).exec();
 
             if (user === null){
