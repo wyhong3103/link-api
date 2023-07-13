@@ -2,6 +2,8 @@ const logger = require('debug')('link-api:user-controller');
 const fs = require('fs');
 const Token = require('../models/token');
 const User = require('../models/user');
+const Post = require('../models/post');
+const mongoose = require('mongoose');
 const asyncHandler = require('express-async-handler');
 const authService = require('../services/auth.service');
 const { body, validationResult } = require('express-validator');
@@ -18,7 +20,15 @@ const get_users = asyncHandler(
 
 const get_user = asyncHandler(
     async (req, res) => {
-        const user = await User.findById(req.params.userid, {}, {email : 0, password : 0, friend_requests : 0})
+        if (!mongoose.isValidObjectId(req.params.userid)){
+            res.status(404).json({
+                status : false,
+                error : {result : "User not found."}
+            })
+        }
+
+        const user = await User.findById(req.params.userid, {})
+        .select(`-email -password ${req.params.userid !== req.userid ? '-friend_requests' : ''}`)
         .populate({
             path : "posts",
             populate : {
@@ -60,6 +70,13 @@ const send_friend_request = asyncHandler(
                 error : {result : "You cannot send yourself a friend request."}
             })
             return;
+        }
+
+        if (!mongoose.isValidObjectId(req.params.userid)){
+            res.status(404).json({
+                status : false,
+                error : {result : "Target user not found."}
+            })
         }
 
         const target = await User.findById(req.params.userid).exec();
@@ -116,6 +133,13 @@ const manage_friend_request = asyncHandler(
             })
         }
 
+        if (!mongoose.isValidObjectId(req.params.friendid)){
+            res.status(404).json({
+                status : false,
+                error : {result : "Friend not found."}
+            })
+        }
+
         const friend = await User.findById(req.params.friendid).exec();
 
         if (friend === null){
@@ -132,7 +156,7 @@ const manage_friend_request = asyncHandler(
                 logger('Users are already friend.');
                 res.json({
                     status : true,
-                    message : "Accepted."
+                    message : "User area already friend."
                 })
                 return;
             }
@@ -140,7 +164,7 @@ const manage_friend_request = asyncHandler(
 
         let found = false;
         for(const i of user.friend_requests){
-            if (i._id.toString() === req.userid){
+            if (i._id.toString() === req.params.friendid){
                 found = true;
             }
         }
@@ -178,7 +202,8 @@ const change_password = [
     .isLength({min : 8, max : 128})
     .withMessage("Old password cannot be empty."),
     body('new_repassword')
-    .custom((value, { req }) => value === req.body.new_password),
+    .custom((value, { req }) => value === req.body.new_password)
+    .withMessage("Confirmation password does not match."),
     asyncHandler(
         async (req, res) => {
             const err = validationResult(req);
@@ -209,9 +234,7 @@ const change_password = [
                 return;
             }
 
-            const match = authService.verifyPassword(req.body.old_password, user.password);
-
-            if (!match){
+            if (!authService.verifyPassword(req.body.old_password, user.password)){
                 logger('Old password does not match.');
                 res.status(403).json({
                     status : false,
@@ -220,11 +243,11 @@ const change_password = [
                 return;
             }
 
-            user.password = authService.hashPassword(req.body.password);
+            user.password = authService.hashPassword(req.body.new_password);
             await user.save();
             logger('Password changed.');
 
-            await Token.deleteMany({user : result.decoded.userid});
+            await Token.deleteMany({user : req.userid});
             logger('All old tokens associated with user is destroyed.');
 
             res.json({
