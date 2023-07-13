@@ -79,6 +79,27 @@ const send_friend_request = asyncHandler(
             })
         }
 
+        const user = await User.findById(req.userid).exec();
+
+        if (user === null){
+            logger('User not found.');
+            res.status(404).json({
+                status : false,
+                error : {result : "User not found."}
+            })
+            return;
+        }
+
+        for(const i of user.friend_requests){
+            if (i._id.toString() === req.params.userid){
+                res.status(400).json({
+                    status : false,
+                    error : { result : "There is an existing friend request by user."}
+                })
+                return;
+            }
+        }
+
         const target = await User.findById(req.params.userid).exec();
 
         if (target === null){
@@ -191,6 +212,138 @@ const manage_friend_request = asyncHandler(
             status : true,
             message : "Accepted."
         })
+    }
+)
+
+const delete_friend_request = asyncHandler(
+    async (req, res) => {
+        if (req.userid !== req.params.friendid && req.userid !== req.params.userid){
+            res.status(403).json({
+                status : false,
+                error : {result : 'No permission.'}
+            })
+            return;
+        }
+
+       if (!mongoose.isValidObjectId(req.params.userid)){
+            logger('User ID is invalid.');
+            res.status(404).json({
+                status : false,
+                error : {result : "User not found."}
+            })
+            return;
+        }
+        if (!mongoose.isValidObjectId(req.params.friendid)){
+            logger('Friend ID is invalid.');
+            res.status(404).json({
+                status : false,
+                error : {result : "Friend not found."}
+            })
+            return;
+        }
+
+        const user = await User.findById(req.params.userid).exec();
+
+        if (user === null){
+            logger('User not found.');
+            res.status(404).json({
+                status : false,
+                error : {result : "User not found."}
+            })
+            return;
+        }
+
+        let found = false;
+        for(const i of user.friend_requests){
+            if (i._id.toString() === req.params.friendid) {
+                found = true;
+            }
+        }
+        
+        if (!found){
+            logger('Friend request not found.');
+            res.status(404).json({
+                status : false,
+                error : {result : "Friend request not found."}
+            })
+            return;
+        }
+
+        user.friend_requests = user.friend_requests.filter(i => i._id.toString() !== req.params.friendid);
+        logger('Remove friend request from user.');
+        await user.save();
+        res.json({
+            status : true,
+            message : "Friend request is removed."
+        });
+    }
+)
+
+
+const delete_friend = asyncHandler(
+    async (req, res) => {
+        if (!mongoose.isValidObjectId(req.params.userid)){
+            logger('User ID is invalid.');
+            res.status(404).json({
+                status : false,
+                error : {result : "User not found."}
+            })
+            return;
+        }
+        if (!mongoose.isValidObjectId(req.params.friendid)){
+            logger('Friend ID is invalid.');
+            res.status(404).json({
+                status : false,
+                error : {result : "Friend not found."}
+            })
+            return;
+        }
+        const user = await User.findById(req.params.userid).exec();
+        const friend = await User.findById(req.params.friendid).exec();
+
+        if (user === null){
+            logger('User ID not found.');
+            res.status(404).json({
+                status : false,
+                error : {result : "User not found."}
+            })
+            return;
+        }
+
+        if (friend === null){
+            logger('Friend ID not found.');
+            res.status(404).json({
+                status : false,
+                error : {result : "Friend not found."}
+            })
+            return;
+        }
+
+        let found = false;
+        for(const i of user.friends){
+            if (i._id.toString() === req.params.friendid){
+                found = true;
+            }
+        }
+        if (!found){
+            logger('Friend is not found.');
+            res.status(404).json({
+                status : false,
+                error : {result : "Friend not found."}
+            })
+            return;
+        }
+
+        user.friends = user.friends.filter(i => i._id.toString() !== req.params.friendid);
+        friend.friends = friend.friends.filter(i => i._id.toString() !== req.params.userid);
+        await user.save();
+        await friend.save();
+        logger('Friend is removed from the list.');
+
+        res.json({
+            status : true,
+            message : "Friend is removed."
+        });
     }
 )
 
@@ -341,6 +494,8 @@ module.exports = {
     get_user,
     send_friend_request,
     manage_friend_request,
+    delete_friend_request,
+    delete_friend,
     change_password,
     update_user_info
 }
