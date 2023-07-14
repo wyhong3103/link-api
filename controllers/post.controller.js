@@ -337,17 +337,172 @@ const unlike_post = asyncHandler(
     }
 )
 
-/*
+const comment_post = [
+    body("content", "Content length should be within 1 to 8000 characters")
+    .trim()
+    .isLength({min : 1 , max : 8000})
+    .escape(),
+    body("markdown")
+    .isBoolean(),
+    body("math")
+    .isBoolean(),
+    asyncHandler(
+        async (req, res) => {
+            const err = validationResult(req);
 
+            if (!err.isEmpty()){
+                const errorMessages = {};
+                
+                for(const i of err.array()){
+                    errorMessages[i.path] = i.msg;
+                }
 
+                logger(`Content details did not pass validation`);
+                res.status(401).json({
+                    status : false,
+                    error : errorMessages
+                })
+                return;
+            }
 
+            const user = req.user;
+            const post = req.post;
 
-const commen_post = {}
+            const comment = await (new Comment({
+                author : user._id,
+                content : req.body.content,
+                markdown : req.body.markdown,
+                math : req.body.math,
+                date : Date.now()
+            })).save();
 
-const update_comment = {}
+            logger('Comment saved in the database.');
+            post.comments.push(comment._id);
+            await post.save();
+            res.json({
+                status : true,
+                message : "Comment posted."
+            });
+        }
+    )
+]
 
-const delete_comment = {}
-*/
+const update_comment = [
+    body("content", "Content length should be within 1 to 8000 characters")
+    .trim()
+    .isLength({min : 1 , max : 8000})
+    .escape(),
+    body("markdown")
+    .isBoolean(),
+    body("math")
+    .isBoolean(),
+    asyncHandler(
+        async (req, res) => {
+            const err = validationResult(req);
+
+            if (!err.isEmpty()){
+                const errorMessages = {};
+                
+                for(const i of err.array()){
+                    errorMessages[i.path] = i.msg;
+                }
+
+                logger(`Content details did not pass validation`);
+                res.status(401).json({
+                    status : false,
+                    error : errorMessages
+                })
+                return;
+            }
+
+            if (!mongoose.isValidObjectId(req.params.commentid)){
+                logger('Comment ID is invalid.');
+                res.status(404).json({
+                    status : false,
+                    error : {result : "Comment not found."}
+                })
+                return;
+            }
+
+            const comment = await Comment.findById(req.params.commentid).exec();
+
+            if (comment === null){
+                logger('Comment ID not found.');
+                res.status(404).json({
+                    status : false,
+                    error : {result : "Comment not found."}
+                })
+                return;
+            }
+            const user = req.user;
+            if (comment.author._id.toString() !== user._id.toString()){
+                logger('No permission.');
+                res.status(403).json({
+                    status : false,
+                    error : {result : "No permission."}
+                })
+                return;
+            }
+
+            comment.content = req.body.content;
+            comment.markdown = req.body.markdown;
+            comment.math = req.body.math;
+
+            logger('Comment updated.');
+            await comment.save();
+            res.json({
+                status : true,
+                message : "Comment updated."
+            });
+        }
+    )
+]
+
+const delete_comment = asyncHandler(
+    async (req, res) => {
+        if (!mongoose.isValidObjectId(req.params.commentid)){
+            logger('Comment ID is invalid.');
+            res.status(404).json({
+                status : false,
+                error : {result : "Comment not found."}
+            })
+            return;
+        }
+
+        const comment = await Comment.findById(req.params.commentid).exec();
+
+        if (comment === null){
+            logger('Comment ID not found.');
+            res.status(404).json({
+                status : false,
+                error : {result : "Comment not found."}
+            })
+            return;
+        }
+
+        const user = req.user;
+        const post = req.post;
+        if (comment.author._id.toString() !== user._id.toString()){
+            logger('No permission.');
+            res.status(403).json({
+                status : false,
+                error : {result : "No permission."}
+            })
+            return;
+        }
+
+        post.comments = post.comments.filter(i => i._id.toString() !== comment._id.toString());
+        await post.save();
+        logger('Comment is removed from post.')
+        await Comment.findByIdAndRemove(comment._id).exec();
+        logger('Comment is removed.')
+
+        res.json({
+            status : true,
+            message : "Comment is removed."
+        });
+    }
+)
 
 
 module.exports = {
@@ -356,5 +511,8 @@ module.exports = {
     update_post,
     delete_post,
     like_post,
-    unlike_post
+    unlike_post,
+    comment_post,
+    update_comment,
+    delete_comment
 }

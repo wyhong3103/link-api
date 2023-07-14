@@ -22,8 +22,10 @@ router.post('/:postid/like', authMiddleware.authorizeUser, postMiddleware.verify
 
 router.delete('/:postid/like', authMiddleware.authorizeUser, postMiddleware.verifyUserAndPost, postController.unlike_post);
 
-// router.post('/:postid/comment', authMiddleware.authorizeUser, postController.comment_post);
-// router.put('/:postid/comment/:commentid', authMiddleware.authorizeUser, postController.update_comment);
-// router.delete('/:postid/comment/:commentid', authMiddleware.authorizeUser, postController.delete_comment);
+router.post('/:postid/comment', authMiddleware.authorizeUser, postMiddleware.verifyUserAndPost, postController.comment_post);
+
+router.put('/:postid/comment/:commentid', authMiddleware.authorizeUser, postMiddleware.verifyUserAndPost, postController.update_comment);
+
+router.delete('/:postid/comment/:commentid', authMiddleware.authorizeUser, postMiddleware.verifyUserAndPost, postController.delete_comment);
 
 module.exports = router;

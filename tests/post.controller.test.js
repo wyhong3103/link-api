@@ -332,4 +332,107 @@ describe("Post Controller Test", () => {
         expect(post.likes).not.toContainEqual(userB._id);
     })
 
+    test("B : Comment post", async () => {
+        const res1 = await agent.get(`/post`)
+
+        const post_id = res1.body.posts[0]._id;
+
+        const res2 = await agent
+        .post(`/post/${post_id}/comment`)
+        .send({content : "test comment", markdown : true, math : true});
+
+        expect(res2.status).toEqual(200);
+
+        const post = await Post.findById(post_id).exec();
+        expect(post.comments).toHaveLength(1);
+
+        const res3 = await agent.get(`/post`);
+        const userB = await User.findOne({email : "user_b@test.com"}).exec();
+        expect(res3.body.posts[0].comments[0].author._id.toString()).toEqual(userB._id.toString());
+        expect(res3.body.posts[0].comments[0].content).toEqual("test comment");
+    })
+
+    test("B : Update comment", async () => {
+        const res1 = await agent.get(`/post`)
+
+        const post_id = res1.body.posts[0]._id;
+
+        const comment_id = res1.body.posts[0].comments[0]._id;
+
+        const res2 = await agent
+        .put(`/post/${post_id}/comment/${comment_id}`)
+        .send({content : "updated comment", markdown : true, math : true});
+
+        expect(res2.status).toEqual(200);
+
+        const post = await Post.findById(post_id).exec();
+        expect(post.comments).toHaveLength(1);
+
+        const res3 = await agent.get(`/post`);
+        const userB = await User.findOne({email : "user_b@test.com"}).exec();
+        expect(res3.body.posts[0].comments[0].author._id.toString()).toEqual(userB._id.toString());
+        expect(res3.body.posts[0].comments[0].content).toEqual("updated comment");
+    })
+
+    test("A : Update comment from B", async () => {
+        await login('a');
+        const res1 = await agent.get(`/post`)
+
+        const post_id = res1.body.posts[0]._id;
+
+        const comment_id = res1.body.posts[0].comments[0]._id;
+
+        const res2 = await agent
+        .put(`/post/${post_id}/comment/${comment_id}`)
+        .send({content : "updated comment A", markdown : true, math : true});
+
+        expect(res2.status).toEqual(403);
+
+        const post = await Post.findById(post_id).exec();
+        expect(post.comments).toHaveLength(1);
+
+        const res3 = await agent.get(`/post`);
+        const userB = await User.findOne({email : "user_b@test.com"}).exec();
+        expect(res3.body.posts[0].comments[0].author._id.toString()).toEqual(userB._id.toString());
+        expect(res3.body.posts[0].comments[0].content).toEqual("updated comment");
+    })
+
+    test("A : Delete comment from B", async () => {
+        await login('a');
+        const res1 = await agent.get(`/post`)
+
+        const post_id = res1.body.posts[0]._id;
+
+        const comment_id = res1.body.posts[0].comments[0]._id;
+
+        const res2 = await agent
+        .delete(`/post/${post_id}/comment/${comment_id}`)
+
+        expect(res2.status).toEqual(403);
+
+        const post = await Post.findById(post_id).exec();
+        expect(post.comments).toHaveLength(1);
+
+        const res3 = await agent.get(`/post`);
+        const userB = await User.findOne({email : "user_b@test.com"}).exec();
+        expect(res3.body.posts[0].comments[0].author._id.toString()).toEqual(userB._id.toString());
+        expect(res3.body.posts[0].comments[0].content).toEqual("updated comment");
+    })
+
+    test("B : Delete comment from B", async () => {
+        await login('b');
+        const res1 = await agent.get(`/post`)
+
+        const post_id = res1.body.posts[0]._id;
+
+        const comment_id = res1.body.posts[0].comments[0]._id;
+
+        const res2 = await agent
+        .delete(`/post/${post_id}/comment/${comment_id}`)
+
+        expect(res2.status).toEqual(200);
+
+        const post = await Post.findById(post_id).exec();
+        expect(post.comments).toHaveLength(0);
+    })
 })
