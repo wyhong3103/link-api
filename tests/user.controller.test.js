@@ -17,7 +17,7 @@ describe("User Controller Test", () => {
                 last_name : "A",
                 email : "user_a@test.com",
                 password : authService.hashPassword("testtest"),
-                image : false
+                image : ""
             })
 
             const user2 = new User({
@@ -25,7 +25,7 @@ describe("User Controller Test", () => {
                 last_name : "B",
                 email : "user_b@test.com",
                 password : authService.hashPassword("testtest"),
-                image : false
+                image : ""
             })
 
             const user3 = new User({
@@ -33,7 +33,7 @@ describe("User Controller Test", () => {
                 last_name : "C",
                 email : "user_c@test.com",
                 password : authService.hashPassword("testtest"),
-                image : false
+                image : ""
             })
 
             await user1.save();
@@ -72,17 +72,17 @@ describe("User Controller Test", () => {
                 {
                     first_name : "User",
                     last_name : "A",
-                    image : false
+                    image : ""
                 },
                 {
                     first_name : "User",
                     last_name : "B",
-                    image : false
+                    image : ""
                 },
                 {
                     first_name : "User",
                     last_name : "C",
-                    image : false
+                    image : ""
                 }
             ]
         );
@@ -98,7 +98,7 @@ describe("User Controller Test", () => {
                 {
                     first_name : "User" ,
                     last_name : "A",
-                    image : false,
+                    image : "",
                     friends : [],
                     posts : [],
                     friend_requests : []
@@ -118,7 +118,7 @@ describe("User Controller Test", () => {
                 {
                     first_name : "User" ,
                     last_name : "B",
-                    image : false,
+                    image : "",
                     friends : [],
                     posts : [],
                 }
