@@ -15,6 +15,15 @@ router.get('/', authMiddleware.authorizeUser, userController.get_users);
 
 /*
 
+
+Get all the users {first_name, last_name, image} based on edit distance at most 5
+
+*/
+
+router.get('/search', authMiddleware.authorizeUser, userController.partial_search_users);
+
+/*
+
 Get a specific user {first_name, last_name, image, friends, posts, [friend_requests iff user is self]}
 
 */

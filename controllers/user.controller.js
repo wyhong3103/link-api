@@ -18,6 +18,72 @@ const get_users = asyncHandler(
     }
 )
 
+const partial_search_users = asyncHandler(
+    async (req, res) => {
+        if (!req.hasOwnProperty('query') || !req.query.hasOwnProperty('keyword')){
+            logger('Keyword not found in the URL.');
+            res.status(400).json({
+                status : false,
+                error : {
+                    result : 'No keyword found.'
+                }
+            })
+            return;
+        }
+
+        const keyword = req.query.keyword;
+        const users = await User.find({}, {_id : 1, first_name : 1, last_name : 1, image : 1}).exec();
+
+        let result = [];
+
+        for(const i of users){
+            const full_name = `${i.first_name} ${i.last_name}`;
+            const n = keyword.length;
+            const m = full_name.length;
+
+            const dp = [];
+            
+            // Initialization
+            for(let i = 0; i < n; i++){
+                const temp = [];
+                for(let j = 0; j < m; j++){
+                    temp.push(0);
+                }
+                dp.push(temp);
+            }
+
+            // Dynamic Programming For Edit Distance
+            for(let i = 0; i < n; i++){
+                for(let j = 0; j < m; j++){
+                    if (!i && !j){
+                        dp[i][j] = (keyword[i] === full_name[j] ? 0 : 1);
+                    }else if (keyword[i] === full_name[j]){
+                        dp[i][j] = (!i ? j : (!j ? i : dp[i-1][j-1]));
+                    }else{
+                        dp[i][j] = Math.min(
+                            (!i ? 5000 : dp[i-1][j]), 
+                            (!j ? 5000 : dp[i][j-1]), 
+                            (i > 0 && j > 0 ? dp[i-1][j-1] : 5000)
+                        ) + 1;
+                    }
+                }
+            }
+
+            result.push([dp[n-1][m-1], i]);
+        }
+
+        result.sort((a,b) => a[0] - b[0]);
+        result = result.map(i => i[1]);
+
+        logger('DP for edit distance is complete, and result is sent to user.');
+
+        res.json({
+            status :true,
+            users : result
+        })
+    }
+)
+
 const get_user = asyncHandler(
     async (req, res) => {
         if (!mongoose.isValidObjectId(req.params.userid)){
@@ -527,6 +593,7 @@ const update_user_info = [
 
 module.exports = {
     get_users,
+    partial_search_users,
     get_user,
     send_friend_request,
     manage_friend_request,
