@@ -41,7 +41,7 @@ const UserSchema = new Schema(
             }
         ],
         image : {
-            type : Boolean,
+            type : String,
             required : true
         }
     }
