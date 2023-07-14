@@ -126,4 +126,87 @@ describe("Post Controller Test", () => {
 
         expect(res2.body.user.posts).toHaveLength(2);
     });
+
+    test("A: Get all posts", async () => {
+        const res1 = 
+        await agent
+        .get(`/post/`)
+
+        expect(res1.status).toEqual(200);
+        expect(res1.body.posts).toHaveLength(2);
+    })
+
+    test("A: Update post", async () => {
+        const res1 = 
+        await agent
+        .get(`/post`)
+
+        const post_id = res1.body.posts[0]._id;
+
+        const res2 = 
+        await agent
+        .put(`/post/${post_id}`)
+        .send({"content" : "updated content", "markdown" : "true", "math" : "true", "delete_image" : "true"});
+
+        expect(res2.status).toEqual(200);
+
+        const post = await Post.findById(post_id).exec();
+
+        expect(post).toEqual(
+            expect.objectContaining(
+                {
+                    content : "updated content",
+                    markdown : true,
+                    math : true
+                }
+            )
+        )
+    })
+
+    test("B: Read post that is from A (and make friend with user A)", async () => {
+        await login('b');
+
+        const userA = await User.findOne({email : "user_a@test.com"}).exec();
+        const userB = await User.findOne({email : "user_b@test.com"}).exec();
+
+        userA.friends.push(userB._id);
+        userB.friends.push(userA._id);
+
+        await userA.save();
+        await userB.save();
+
+        const res1 = 
+        await agent
+        .get(`/post/`)
+
+
+        expect(res1.body.posts).toHaveLength(2);
+    })
+
+    test("B: Update post that is from A", async () => {
+        const res1 = 
+        await agent
+        .get(`/post`)
+
+        const post_id = res1.body.posts[0]._id;
+
+        const res2 = 
+        await agent
+        .put(`/post/${post_id}`)
+        .send({"content" : "updated content by B", "markdown" : "true", "math" : "true", "delete_image" : "true"});
+
+        expect(res2.status).toEqual(403);
+
+        const post = await Post.findById(post_id).exec();
+
+        expect(post).toEqual(
+            expect.objectContaining(
+                {
+                    content : "updated content",
+                    markdown : true,
+                    math : true
+                }
+            )
+        )
+    })
 })
