@@ -459,6 +459,8 @@ const update_user_info = [
                 })
                 return;
             }
+            
+            req.body.delete_image = req.body.delete_image === 'true';
 
             // If detect file and delete image is not checked
             if (!req.body.delete_image && req.file){
@@ -485,11 +487,21 @@ const update_user_info = [
             }
 
             if (req.body.delete_image){
+                logger('Attempting to delete upload image.');
+                if (!fileService.deleteImage(req.file.path, logger)){
+                    res.json(400).json({
+                        status : false,
+                        error : {result : 'Something went wrong.'}
+                    })
+                    return;
+                }
+                logger('Attempting to delete user image.');
                 if (!fileService.deleteImage(user.image, logger)){
                     res.json(400).json({
                         status : false,
                         error : {result : 'Something went wrong.'}
                     })
+                    return;
                 }
                 user.image = "";
             }

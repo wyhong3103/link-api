@@ -25,20 +25,19 @@ const transferImage = (file, id, logger) => {
 }
 
 const deleteImage = (filePath, logger) => {
-    fs.unlink(filePath, (err) => {
-        if (err) {
-            if (err.code === 'ENOENT') {
-                logger('File does not exist');
-                return true;
-            } else {
-                logger('Error deleting the file:', err);
-                return false;
-            }
-        } else {
-            logger('File deleted successfully');
+    try{
+        fs.unlinkSync(filePath)
+        logger('File deleted successfully');
+        return true;
+    } catch (err) {
+        if (err.code === 'ENOENT') {
+            logger('File does not exist');
             return true;
+        } else {
+            logger('Error deleting the file:', err);
+            return false;
         }
-    });
+    }
 }
 
 module.exports = {
