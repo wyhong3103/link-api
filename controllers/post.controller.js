@@ -60,6 +60,8 @@ const get_posts = asyncHandler(
             posts.push(...i.posts);
         }
 
+        posts.sort((a, b) => a.date - b.date);
+
         res.json({
             status : true,
             posts
@@ -211,6 +213,7 @@ const update_post = [
             const user = await User.findById(req.userid).exec();
 
             if (user === null){
+                logger('User not found.');
                 res.status(404).json({
                     status : false,
                     error : {result : 'User not found.'}
@@ -221,7 +224,7 @@ const update_post = [
             const post = await Post.findById(req.params.postid).exec();
 
             if (post === null){
-                logger('Post id is invalid.')
+                logger('Post not found.');
                 res.status(404).json({
                     status : false,
                     error : {result : 'Post not found.'}
@@ -293,10 +296,59 @@ const update_post = [
     )
 ]
 
+const delete_post = asyncHandler(
+    async (req, res) => {
+        if (!mongoose.isValidObjectId(req.params.postid)){
+            logger('Post id is invalid.');
+            res.status(404).json({
+                status : false,
+                error : {result : "Post not found."}
+            })
+        }
+
+        const user = await User.findById(req.userid).exec();
+
+        if (user === null){
+            logger('User not found');
+            res.status(404).json({
+                status : false,
+                error : {result : 'User not found.'}
+            });
+            return;
+        }
+
+        const post = await Post.findById(req.params.postid).exec();
+
+        if (post === null){
+            logger('Post not found');
+            res.status(404).json({
+                status : false,
+                error : {result : 'Post not found.'}
+            });
+            return;
+        }
+
+        if (post.author._id.toString() !== user._id.toString()){
+            logger('No permission.');
+            res.status(403).json({
+                status : false,
+                error : {result : 'No permission.'}
+            });
+            return;
+        }
+
+        await Post.findByIdAndRemove(post._id);
+        logger('Post is deleted.');
+        res.json({
+            status : true,
+            message : "Post is deleted."
+        });
+    }
+)
+
 /*
 
 
-const delete_post = {}
 
 const like_post = {}
 
@@ -313,5 +365,6 @@ const delete_comment = {}
 module.exports = {
     get_posts,
     create_post,
-    update_post
+    update_post,
+    delete_post
 }
