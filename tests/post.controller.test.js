@@ -78,6 +78,12 @@ describe("Post Controller Test", () => {
             expect.objectContaining(
                 {
                     content : "test",
+                    author : {
+                        _id : userA._id.toString(),
+                        first_name : "User",
+                        last_name : "A",
+                        image : ""
+                    },
                     markdown : false,
                     math : true,
                     comments : [],
