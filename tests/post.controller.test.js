@@ -280,4 +280,56 @@ describe("Post Controller Test", () => {
 
         expect(post).toEqual(null);
     })
+
+    test("A & B: Like post", async () => {
+        const res1 = await agent.get(`/post`)
+
+        const post_id = res1.body.posts[0]._id;
+
+        await agent
+        .post(`/post/${post_id}/like`)
+
+        await login('b');
+
+        await agent
+        .post(`/post/${post_id}/like`)
+
+        const post = await Post.findById(post_id).exec();
+
+        expect(post.likes).toHaveLength(2);
+    })
+
+    test("B: Like more than one time", async () => {
+        const res1 = await agent.get(`/post`)
+
+        const post_id = res1.body.posts[0]._id;
+
+        await agent
+        .post(`/post/${post_id}/like`)
+
+        await agent
+        .post(`/post/${post_id}/like`)
+
+        const post = await Post.findById(post_id).exec();
+
+        expect(post.likes).toHaveLength(2);
+    })
+
+    test("B: Unlike post", async () => {
+        const res1 = await agent.get(`/post`)
+
+        const post_id = res1.body.posts[0]._id;
+
+        await agent
+        .delete(`/post/${post_id}/like`)
+
+        const post = await Post.findById(post_id).exec();
+
+        const userA = await User.findOne({email : "user_a@test.com"}).exec();
+        const userB = await User.findOne({email : "user_b@test.com"}).exec();
+
+        expect(post.likes).toContainEqual(userA._id);
+        expect(post.likes).not.toContainEqual(userB._id);
+    })
+
 })

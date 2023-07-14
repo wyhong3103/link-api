@@ -295,7 +295,45 @@ const delete_post = asyncHandler(
 
 const like_post = asyncHandler(
     async (req, res) => {
+        const user = req.user;
+        const post = req.post;
 
+        let found = false;
+        for(const i of post.likes){
+            if (i._id.toString() === user._id.toString()){
+                logger('User already liked this post.');
+                found = true;
+            }
+        }
+
+        if (!found){
+            logger('Like is sent.');
+            post.likes.push(user._id);
+        }
+
+        await post.save();
+
+        res.json({
+            status : true,
+            message : "Like is sent."
+        })
+    }
+)
+
+const unlike_post = asyncHandler(
+    async (req, res) => {
+        const user = req.user;
+        const post = req.post;
+
+        post.likes = post.likes.filter(i => i._id.toString() !== user._id.toString());
+        logger('Like is removed if there is any');
+
+        await post.save();
+
+        res.json({
+            status : true,
+            message : "Like is retracted."
+        })
     }
 )
 
@@ -303,7 +341,6 @@ const like_post = asyncHandler(
 
 
 
-const unlike_post = {}
 
 const commen_post = {}
 
@@ -317,5 +354,7 @@ module.exports = {
     get_posts,
     create_post,
     update_post,
-    delete_post
+    delete_post,
+    like_post,
+    unlike_post
 }

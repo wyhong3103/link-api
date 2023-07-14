@@ -17,8 +17,11 @@ router.post('/', authMiddleware.authorizeUser, upload.single('image'), postContr
 router.put('/:postid', authMiddleware.authorizeUser, postMiddleware.verifyUserAndPost, postController.update_post);
 
 router.delete('/:postid', authMiddleware.authorizeUser, postMiddleware.verifyUserAndPost, postController.delete_post);
-// router.post('/:postid/like', authMiddleware.authorizeUser, postController.like_post);
-// router.delete('/:postid/like/', authMiddleware.authorizeUser, postController.unlike_post);
+
+router.post('/:postid/like', authMiddleware.authorizeUser, postMiddleware.verifyUserAndPost, postController.like_post);
+
+router.delete('/:postid/like', authMiddleware.authorizeUser, postMiddleware.verifyUserAndPost, postController.unlike_post);
+
 // router.post('/:postid/comment', authMiddleware.authorizeUser, postController.comment_post);
 // router.put('/:postid/comment/:commentid', authMiddleware.authorizeUser, postController.update_comment);
 // router.delete('/:postid/comment/:commentid', authMiddleware.authorizeUser, postController.delete_comment);
