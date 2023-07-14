@@ -209,4 +209,75 @@ describe("Post Controller Test", () => {
             )
         )
     })
+
+    test("B: Delete post that is from A", async () => {
+        const res1 = 
+        await agent
+        .get(`/post`)
+
+        const post_id = res1.body.posts[0]._id;
+
+        const res2 = 
+        await agent
+        .delete(`/post/${post_id}`)
+
+        expect(res2.status).toEqual(403);
+
+        const post = await Post.findById(post_id).exec();
+
+        expect(post).toEqual(
+            expect.objectContaining(
+                {
+                    content : "updated content",
+                    markdown : true,
+                    math : true
+                }
+            )
+        )
+    })
+
+    test("B: Delete post that is from A", async () => {
+        const res1 = 
+        await agent
+        .get(`/post`)
+
+        const post_id = res1.body.posts[0]._id;
+
+        const res2 = 
+        await agent
+        .delete(`/post/${post_id}`)
+
+        expect(res2.status).toEqual(403);
+
+        const post = await Post.findById(post_id).exec();
+
+        expect(post).toEqual(
+            expect.objectContaining(
+                {
+                    content : "updated content",
+                    markdown : true,
+                    math : true
+                }
+            )
+        )
+    })
+
+    test("A: Delete post", async () => {
+        await login('a');
+        const res1 = 
+        await agent
+        .get(`/post`)
+
+        const post_id = res1.body.posts[0]._id;
+
+        const res2 = 
+        await agent
+        .delete(`/post/${post_id}`)
+
+        expect(res2.status).toEqual(200);
+
+        const post = await Post.findById(post_id).exec();
+
+        expect(post).toEqual(null);
+    })
 })
