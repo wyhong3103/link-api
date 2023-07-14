@@ -17,6 +17,8 @@ userid, accessToken, refreshToken
 */
 router.post('/login', authController.login);
 
+router.post('/logout', authController.logout);
+
 /*
 
 Input :

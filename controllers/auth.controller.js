@@ -78,6 +78,19 @@ const login = [
     )
 ]
 
+const logout = asyncHandler(
+    async (req,res) => {
+        res.clearCookie('accessToken');
+        await Token.deleteOne({token : req.refreshToken}).exec();
+        res.clearCookie('refreshToken');
+        logger('Acess token and refresh token is removed from cookies if there is any.')
+        res.json({
+            status : true,
+            message : "Logged out."
+        })
+    }
+)
+
 
 const refresh = asyncHandler(
     async (req, res) => {
@@ -336,6 +349,7 @@ const verify_reset_password = [
 
 module.exports = {
     login,
+    logout,
     refresh,
     register,
     verify_email,
