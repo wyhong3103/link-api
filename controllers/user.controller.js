@@ -31,13 +31,19 @@ const get_user = asyncHandler(
         .select(`-email -password ${req.params.userid !== req.userid ? '-friend_requests' : ''}`)
         .populate({
             path : "posts",
-            populate : {
-                path : 'comments',
-                populate : {
+            populate : [
+                {
+                    path : 'comments',
+                    populate : {
+                        path : 'author',
+                        select : "_id first_name last_name image"
+                    }
+                },
+                {
                     path : 'author',
                     select : "_id first_name last_name image"
                 }
-            }
+            ]
         })
         .populate({
             path : "friends",
