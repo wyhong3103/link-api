@@ -202,37 +202,10 @@ const update_post = [
                 return;
             }
 
-            if (!mongoose.isValidObjectId(req.params.postid)){
-                logger('Post id is invalid.');
-                res.status(404).json({
-                    status : false,
-                    error : {result : "Post not found."}
-                })
-            }
+            const user = req.user;
+            const post = req.post;
 
-            const user = await User.findById(req.userid).exec();
-
-            if (user === null){
-                logger('User not found.');
-                res.status(404).json({
-                    status : false,
-                    error : {result : 'User not found.'}
-                });
-                return;
-            }
-
-            const post = await Post.findById(req.params.postid).exec();
-
-            if (post === null){
-                logger('Post not found.');
-                res.status(404).json({
-                    status : false,
-                    error : {result : 'Post not found.'}
-                });
-                return;
-            }
-
-            if (user._id.toString() !== post.author._id.toString()){
+            if (req.user._id.toString() !== post.author._id.toString()){
                 logger('No permission.')
                 res.status(403).json({
                     status : false,
@@ -298,35 +271,8 @@ const update_post = [
 
 const delete_post = asyncHandler(
     async (req, res) => {
-        if (!mongoose.isValidObjectId(req.params.postid)){
-            logger('Post id is invalid.');
-            res.status(404).json({
-                status : false,
-                error : {result : "Post not found."}
-            })
-        }
-
-        const user = await User.findById(req.userid).exec();
-
-        if (user === null){
-            logger('User not found');
-            res.status(404).json({
-                status : false,
-                error : {result : 'User not found.'}
-            });
-            return;
-        }
-
-        const post = await Post.findById(req.params.postid).exec();
-
-        if (post === null){
-            logger('Post not found');
-            res.status(404).json({
-                status : false,
-                error : {result : 'Post not found.'}
-            });
-            return;
-        }
+        const user = req.user;
+        const post = req.post;
 
         if (post.author._id.toString() !== user._id.toString()){
             logger('No permission.');
@@ -346,11 +292,16 @@ const delete_post = asyncHandler(
     }
 )
 
+
+const like_post = asyncHandler(
+    async (req, res) => {
+
+    }
+)
+
 /*
 
 
-
-const like_post = {}
 
 const unlike_post = {}
 
