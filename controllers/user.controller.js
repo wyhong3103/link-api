@@ -1,11 +1,11 @@
 const logger = require('debug')('link-api:user-controller');
-const fs = require('fs');
 const Token = require('../models/token');
 const User = require('../models/user');
 const Post = require('../models/post');
 const mongoose = require('mongoose');
 const asyncHandler = require('express-async-handler');
 const authService = require('../services/auth.service');
+const fileService = require('../services/file.service');
 const { body, validationResult } = require('express-validator');
 
 const get_users = asyncHandler(
@@ -437,6 +437,8 @@ const update_user_info = [
     .isLength({min : 1, max :  50})
     .withMessage('Last name must be within 1 to 50 characters')
     .escape(),
+    body('delete_image')
+    .isBoolean(),
     asyncHandler(
         async (req, res) => {
             if (req.userid !== req.params.userid){
@@ -458,37 +460,21 @@ const update_user_info = [
                 return;
             }
 
-            // If detect file
-            if (req.file){
+            // If detect file and delete image is not checked
+            if (!req.body.delete_image && req.file){
                 if (req.file.mimetype.startsWith('image/')) {
-                    logger('Uploaded file is an image');
-                    const file = req.file;
-                    const newFileName = user._id + '.' + file.originalname.match(/\.(\w+)$/)[1];
-                    const newPath = `${file.destination}${newFileName}`;
-                    // Rename the file
-                    fs.renameSync(file.path, newPath);
+                    const result = fileService.transferImage(req.file, user._id, logger);
 
-                    // Replace with the actual destination file path
-                    const destinationPath = 'public/images/' + newFileName; 
-
-                    let hasError = false;
-                    fs.rename(newPath, destinationPath, (err) => {
-                        if (err) {
-                            logger(`Error moving file - ${err}`);
-                            hasError = true;
-                            res.status(400).json({
-                                status : false,
-                                error : {result : 'Something went wrong'}
-                            })
-                            return;
-                        }
-                    });
-
-                    if (hasError) return;
-
-                    user.image = true;
+                    if (result.status){
+                        user.image = result.path;
+                    }else{
+                        res.json(400).json({
+                            status : false,
+                            error : {result : 'Something went wrong.'}
+                        })
+                        return;
+                    }
                 }else{
-                    user.image = false;
                     logger('Uploaded file has an unsupported mimetype');
                     res.json(400).json({
                         status : false,
@@ -496,6 +482,16 @@ const update_user_info = [
                     })
                     return;
                 }
+            }
+
+            if (req.body.delete_image){
+                if (!fileService.deleteImage(user.image, logger)){
+                    res.json(400).json({
+                        status : false,
+                        error : {result : 'Something went wrong.'}
+                    })
+                }
+                user.image = "";
             }
 
             user.first_name = req.body.first_name;

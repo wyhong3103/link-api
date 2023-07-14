@@ -173,7 +173,7 @@ const register = [
                 password : authService.hashPassword(req.body.password),
                 first_name : req.body.first_name,
                 last_name : req.body.last_name,
-                image : false
+                image : ""
             };
             
             const emailToken = authService.generateToken(user, 'email');
