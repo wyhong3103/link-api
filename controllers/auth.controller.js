@@ -347,6 +347,13 @@ const verify_reset_password = [
     )
 ]
 
+const get_auth_status = (req, res) => {
+    res.json({
+        status : true,
+        _id : req.userid
+    })
+}
+
 module.exports = {
     login,
     logout,
@@ -354,5 +361,6 @@ module.exports = {
     register,
     verify_email,
     verify_reset_password,
-    reset_password
+    reset_password,
+    get_auth_status
 }

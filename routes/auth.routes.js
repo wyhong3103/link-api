@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
+const { authorizeUser } = require('../middlewares/auth.middleware');
 
 /*
 
@@ -78,5 +79,7 @@ body : {
 
 */
 router.post('/verify-reset-password', authController.verify_reset_password);
+
+router.get('/get-status', authorizeUser, authController.get_auth_status)
 
 module.exports = router;
