@@ -41,12 +41,8 @@ router.get('/', authMiddleware.authorizeUser, postController.get_posts);
 
 Create post
 
-If delete image is true, it will delete the existing image & upload image (if there is any)
-
-else it is going to check whether there is an image attached, and replace it with the original
-
 Input : {
-    content, markdown, math, delete_image
+    content, markdown, math
 }
 
 */
@@ -60,7 +56,7 @@ Update Post
 delete image works the same as posting
 
 Input : {
-    content, markdown, math, delete_image
+    content, markdown, math
 }
 
 */
