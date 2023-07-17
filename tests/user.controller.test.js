@@ -236,6 +236,7 @@ describe("User Controller Test", () => {
                             first_name : 'User',
                             last_name : 'B',
                             image : '',
+                            type : 'self'
                         }
                     ],
                     posts : [],

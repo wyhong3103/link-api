@@ -145,7 +145,7 @@ const get_user = asyncHandler(
         })
         .populate({
             path : "friends",
-            select : "_id first_name last_name image"
+            select : "_id first_name last_name image friend_requests"
         })
         .exec()).toObject();
 
@@ -163,6 +163,11 @@ const get_user = asyncHandler(
         user.type = userService.getRelationship(self, user);
 
         if (user.type !== 'self') delete user.friend_requests;
+
+        for(const i of user.friends){
+            i.type = userService.getRelationship(self, i);
+            delete i.friend_requests;
+        }
 
         logger('User information is returned to client.');
 
