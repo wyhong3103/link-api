@@ -6,14 +6,31 @@ const mongoose = require('mongoose');
 const asyncHandler = require('express-async-handler');
 const authService = require('../services/auth.service');
 const fileService = require('../services/file.service');
+const userService = require('../services/user.service');
 const { body, validationResult } = require('express-validator');
 
 const get_users = asyncHandler(
     async (req, res) => {
-        const users = await User.find({}, {_id : 1, first_name : 1, last_name : 1, image : 1}).exec();
+        const self = await User.findById(req.userid).exec();
+        const users = await User.find({}, {_id : 1, first_name : 1, last_name : 1, image : 1, friend_requests : 1}).exec();
         logger('User list is returned to client.');
+
+        const ret = [];
+
+        for(let i = 0; i < users.length; i++){
+            const temp = {
+                _id : users[i]._id,
+                first_name : users[i].first_name,
+                last_name : users[i].last_name,
+                image : users[i].image,
+            };
+            temp.type = userService.getRelationship(self, users[i]);
+            delete temp.friend_requests
+            ret.push(temp);
+        }
+
         res.json({
-            users
+            users : ret
         });
     }
 )
@@ -32,12 +49,27 @@ const partial_search_users = asyncHandler(
         }
 
         const keyword = req.query.keyword;
-        const users = await User.find({}, {_id : 1, first_name : 1, last_name : 1, image : 1}).exec();
+        const self = await User.findById(req.userid).exec();
+        const users = await User.find({}, {_id : 1, first_name : 1, last_name : 1, image : 1, friend_requests : 1}).exec();
+
+        const ret = [];
+
+        for(let i = 0; i < users.length; i++){
+            const temp = {
+                _id : users[i]._id,
+                first_name : users[i].first_name,
+                last_name : users[i].last_name,
+                image : users[i].image,
+            };
+            temp.type = userService.getRelationship(self, users[i]);
+            delete temp.friend_requests
+            ret.push(temp);
+        }
 
         let result = [];
 
-        for(const i of users){
-            const full_name = `${i.first_name} ${i.last_name}`;
+        for(const user of ret){
+            const full_name = `${user.first_name} ${user.last_name}`;
             const n = keyword.length;
             const m = full_name.length;
 
@@ -69,7 +101,7 @@ const partial_search_users = asyncHandler(
                 }
             }
 
-            result.push([dp[n-1][m-1], i]);
+            result.push([dp[n-1][m-1], user]);
         }
 
         result.sort((a,b) => a[0] - b[0]);
@@ -93,8 +125,8 @@ const get_user = asyncHandler(
             })
         }
 
-        const user = await User.findById(req.params.userid, {})
-        .select(`-email -password ${req.params.userid !== req.userid ? '-friend_requests' : ''}`)
+        const user = (await User.findById(req.params.userid, {})
+        .select(`-email -password`)
         .populate({
             path : "posts",
             populate : [
@@ -115,7 +147,7 @@ const get_user = asyncHandler(
             path : "friends",
             select : "_id first_name last_name image"
         })
-        .exec();
+        .exec()).toObject();
 
         if (user === null){
             logger('Requested user does not exist.');
@@ -125,6 +157,13 @@ const get_user = asyncHandler(
             })
             return;
         }
+
+        const self = await User.findById(req.userid).exec();
+
+        user.type = userService.getRelationship(self, user);
+
+        if (user.type !== 'self') delete user.friend_requests;
+
         logger('User information is returned to client.');
 
         res.json({

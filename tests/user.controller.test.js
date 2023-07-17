@@ -63,7 +63,8 @@ describe("User Controller Test", () => {
             return {
                 first_name : i.first_name,
                 last_name : i.last_name,
-                image : i.image
+                image : i.image,
+                type : i.type
             }
             }
         );
@@ -72,17 +73,20 @@ describe("User Controller Test", () => {
                 {
                     first_name : "User",
                     last_name : "A",
-                    image : ""
+                    image : "",
+                    type : 'self'
                 },
                 {
                     first_name : "User",
                     last_name : "B",
-                    image : ""
+                    image : "",
+                    type : 'stranger'
                 },
                 {
                     first_name : "User",
                     last_name : "C",
-                    image : ""
+                    image : "",
+                    type : 'stranger'
                 }
             ]
         );
@@ -101,7 +105,8 @@ describe("User Controller Test", () => {
                     image : "",
                     friends : [],
                     posts : [],
-                    friend_requests : []
+                    friend_requests : [],
+                    type : 'self'
                 }
             )
         );
@@ -121,6 +126,7 @@ describe("User Controller Test", () => {
                     image : "",
                     friends : [],
                     posts : [],
+                    type : 'stranger'
                 }
             )
         );
@@ -135,6 +141,26 @@ describe("User Controller Test", () => {
 
         expect(res.status).toEqual(200);
     })
+
+    test("A: Get B relationship type (sent)", async () => {
+        const user = await User.findOne({email : "user_b@test.com"}).exec();
+        const res = await agent.get(`/user/${user._id}`).set('Accept', 'application/json');
+
+        expect(res.status).toEqual(200);
+        expect(res.body.user).not.toHaveProperty("friend_requets");
+        expect(res.body.user).toEqual(
+            expect.objectContaining(
+                {
+                    first_name : "User" ,
+                    last_name : "B",
+                    image : "",
+                    friends : [],
+                    posts : [],
+                    type : 'sent'
+                }
+            )
+        );
+    })  
     
     test("A: Send friend request to self", async () => {
         const userA = await User.findOne({email : "user_a@test.com"}).exec();
@@ -153,7 +179,27 @@ describe("User Controller Test", () => {
         .post(`/user/${userA._id}/friend-request`)
 
         expect(res.status).toEqual(400);
-    })
+    })    
+    
+    test("B: Get A relationship type (accept)", async () => {
+        const user = await User.findOne({email : "user_a@test.com"}).exec();
+        const res = await agent.get(`/user/${user._id}`).set('Accept', 'application/json');
+
+        expect(res.status).toEqual(200);
+        expect(res.body.user).not.toHaveProperty("friend_requets");
+        expect(res.body.user).toEqual(
+            expect.objectContaining(
+                {
+                    first_name : "User" ,
+                    last_name : "A",
+                    image : "",
+                    friends : [],
+                    posts : [],
+                    type : 'accept'
+                }
+            )
+        );
+    })  
 
     test("B: Accept friend request", async () => {
         const userA = await User.findOne({email : "user_a@test.com"}).exec();
@@ -170,6 +216,34 @@ describe("User Controller Test", () => {
         expect(newUserA.friends.map(i => i._id)).toContainEqual(userB._id);
         expect(newUserB.friends.map(i => i._id)).toContainEqual(userA._id);
     })
+
+    test("B: Get A relationship type (friend)", async () => {
+        const self = await User.findOne({email : "user_b@test.com"}).exec();
+        const user = await User.findOne({email : "user_a@test.com"}).exec();
+        const res = await agent.get(`/user/${user._id}`).set('Accept', 'application/json');
+
+        expect(res.status).toEqual(200);
+        expect(res.body.user).not.toHaveProperty("friend_requets");
+        expect(res.body.user).toEqual(
+            expect.objectContaining(
+                {
+                    first_name : "User" ,
+                    last_name : "A",
+                    image : "",
+                    friends : [
+                        {
+                            _id : self._id.toString(),
+                            first_name : 'User',
+                            last_name : 'B',
+                            image : '',
+                        }
+                    ],
+                    posts : [],
+                    type : 'friend'
+                }
+            )
+        );
+    })  
 
     test("C: Delete friendship of A and B as C", async () => {
         await login('c');
