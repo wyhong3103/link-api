@@ -1,7 +1,7 @@
 const authService = require('../services/auth.service');
 
 const authorizeUser = (req, res, next) => {
-    if (req.cookies.hasOwnProperty('accessToken')){
+    if (typeof req.cookies === 'object' && Object.hasOwnProperty.bind(req.cookies)('accessToken')){
         const result = authService.verifyToken(req.cookies.accessToken,'access');
         if (!result.status){
             res.status(403).json({

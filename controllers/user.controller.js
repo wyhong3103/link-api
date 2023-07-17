@@ -20,7 +20,7 @@ const get_users = asyncHandler(
 
 const partial_search_users = asyncHandler(
     async (req, res) => {
-        if (!req.hasOwnProperty('query') || !req.query.hasOwnProperty('keyword')){
+        if (!Object.hasOwnProperty.bind(req)('query') || !Object.hasOwnProperty.bind(req)('keyword')){
             logger('Keyword not found in the URL.');
             res.status(400).json({
                 status : false,

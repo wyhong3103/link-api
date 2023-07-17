@@ -94,7 +94,7 @@ const logout = asyncHandler(
 
 const refresh = asyncHandler(
     async (req, res) => {
-        if (req.cookies.hasOwnProperty('refreshToken')){
+        if (Object.hasOwnProperty.bind(req.cookies)('refreshToken')){
             const token = req.cookies.refreshToken;
 
             const result = authService.verifyToken(token, 'refresh');
@@ -347,12 +347,16 @@ const verify_reset_password = [
     )
 ]
 
-const get_auth_status = (req, res) => {
-    res.json({
-        status : true,
-        _id : req.userid
-    })
-}
+const get_auth_status = asyncHandler(
+    async (req, res) => {
+        const name = (await User.findById(req.userid).select('first_name last_name'))
+        res.json({
+            status : true,
+            _id : req.userid,
+            first_name : name.first_name,
+            last_name : name.last_name
+        })
+})
 
 module.exports = {
     login,
