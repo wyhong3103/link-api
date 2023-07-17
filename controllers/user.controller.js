@@ -486,7 +486,7 @@ const change_password = [
     .withMessage("Old password cannot be empty."),
     body('new_password')
     .isLength({min : 8, max : 128})
-    .withMessage("Old password cannot be empty."),
+    .withMessage("New password must be within 8 and 128 characters."),
     body('new_repassword')
     .custom((value, { req }) => value === req.body.new_password)
     .withMessage("Confirmation password does not match."),
@@ -637,7 +637,7 @@ const update_user_info = [
                     return;
                 }
                 logger('Attempting to delete user image.');
-                if (!fileService.deleteImage(user.image, logger)){
+                if (!fileService.deleteImage('public/' + user.image, logger)){
                     res.json(400).json({
                         status : false,
                         error : {result : 'Something went wrong.'}
