@@ -113,11 +113,13 @@ const refresh = asyncHandler(
 
             logger('New access token is generated and set to cookie.')
             res.cookie('accessToken', authService.generateToken({userid : result.decoded.userid}, 'access'), {maxAge : 3600000, httpOnly : true});
-            res.json(
-                {
-                    userid : result.decoded.userid,
-                }
-            )
+            const name = (await User.findById(result.decoded.userid).select('first_name last_name'))
+            res.json({
+                status : true,
+                userid : result.decoded.userid,
+                first_name : name.first_name,
+                last_name : name.last_name
+            })
         }else{
             logger('Refresh token is not found in the cookies.')
 
@@ -352,7 +354,7 @@ const get_auth_status = asyncHandler(
         const name = (await User.findById(req.userid).select('first_name last_name'))
         res.json({
             status : true,
-            _id : req.userid,
+            userid : req.userid,
             first_name : name.first_name,
             last_name : name.last_name
         })
