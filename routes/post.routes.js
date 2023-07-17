@@ -3,8 +3,6 @@ const router = express.Router();
 const postController = require('../controllers/post.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 const postMiddleware = require('../middlewares/post.middleware');
-const multer = require('multer');
-const upload = multer({dest : "uploads/"});
 
 /*
 
@@ -53,7 +51,7 @@ Input : {
 
 */
 
-router.post('/', authMiddleware.authorizeUser, upload.single('image'), postController.create_post);
+router.post('/', authMiddleware.authorizeUser, postController.create_post);
 
 /*
 

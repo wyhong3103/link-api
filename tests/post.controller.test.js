@@ -61,7 +61,7 @@ describe("Post Controller Test", () => {
         const res1 = 
         await agent
         .post('/post')
-        .send({"content" : "test", "markdown" : "false", "math" : "true", "delete_image" : "false"});
+        .send({"content" : "test", "markdown" : "false", "math" : "true"});
 
         expect(res1.status).toEqual(200);
 
@@ -87,7 +87,6 @@ describe("Post Controller Test", () => {
                     markdown : false,
                     math : true,
                     comments : [],
-                    image : ""
                 }
             )
         )
@@ -109,14 +108,12 @@ describe("Post Controller Test", () => {
 
         expect(res2.body.user.posts).toHaveLength(1);
     })    
-    
-    test("A: Create post and delete non-existing image", async () => {
+
+    test("A: Create another post", async () => {
         const res1 = 
         await agent
         .post('/post')
-        .send({"content" : "test 1", "markdown" : "false", "math" : "true", "delete_image" : "true"});
-
-        expect(res1.status).toEqual(200);
+        .send({"content" : "test", "markdown" : "false", "math" : "true"});
 
         const userA = await User.findOne({email : "user_a@test.com"}).exec();
         
@@ -125,8 +122,8 @@ describe("Post Controller Test", () => {
         .get(`/user/${userA._id}`)
 
         expect(res2.body.user.posts).toHaveLength(2);
-    });
-
+    })    
+    
     test("A: Get all posts", async () => {
         const res1 = 
         await agent
@@ -146,7 +143,7 @@ describe("Post Controller Test", () => {
         const res2 = 
         await agent
         .put(`/post/${post_id}`)
-        .send({"content" : "updated content", "markdown" : "true", "math" : "true", "delete_image" : "true"});
+        .send({"content" : "updated content", "markdown" : "true", "math" : "true"});
 
         expect(res2.status).toEqual(200);
 
@@ -193,7 +190,7 @@ describe("Post Controller Test", () => {
         const res2 = 
         await agent
         .put(`/post/${post_id}`)
-        .send({"content" : "updated content by B", "markdown" : "true", "math" : "true", "delete_image" : "true"});
+        .send({"content" : "updated content by B", "markdown" : "true", "math" : "true"});
 
         expect(res2.status).toEqual(403);
 
