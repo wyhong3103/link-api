@@ -37,7 +37,7 @@ const get_users = asyncHandler(
 
 const partial_search_users = asyncHandler(
     async (req, res) => {
-        if (!Object.hasOwnProperty.bind(req)('query') || !Object.hasOwnProperty.bind(req)('keyword')){
+        if (!Object.hasOwnProperty.bind(req)('query') || !Object.hasOwnProperty.bind(req.query)('keyword')){
             logger('Keyword not found in the URL.');
             res.status(400).json({
                 status : false,
@@ -147,6 +147,10 @@ const get_user = asyncHandler(
             path : "friends",
             select : "_id first_name last_name image friend_requests"
         })
+        .populate({
+            path : "friend_requests",
+            select : "_id first_name last_name image friend_requests"
+        })
         .exec()).toObject();
 
         if (user === null){
@@ -162,11 +166,17 @@ const get_user = asyncHandler(
 
         user.type = userService.getRelationship(self, user);
 
-        if (user.type !== 'self') delete user.friend_requests;
-
         for(const i of user.friends){
             i.type = userService.getRelationship(self, i);
             delete i.friend_requests;
+        }
+
+        if (user.type !== 'self') delete user.friend_requests;
+        else{
+            for(const i of user.friend_requests){
+                i.type = userService.getRelationship(self, i);
+                delete i.friend_requests;
+            }
         }
 
         logger('User information is returned to client.');
@@ -557,6 +567,21 @@ const update_user_info = [
     .isBoolean(),
     asyncHandler(
         async (req, res) => {
+            const err = validationResult(req);
+            if (!err.isEmpty()){
+                const errorMessages = {};
+                
+                for(const i of err.array()){
+                    errorMessages[i.path] = i.msg;
+                }
+
+                logger(`Update details did not pass the validation.`)
+                res.status(400).json({
+                     status : false,
+                     error: errorMessages 
+                });
+                return;
+            }        
             if (req.userid !== req.params.userid){
                 res.status(403).json({
                     status : false,
@@ -584,7 +609,7 @@ const update_user_info = [
                     const result = fileService.transferImage(req.file, user._id, logger);
 
                     if (result.status){
-                        user.image = result.path;
+                        user.image = result.path.substring(6);
                     }else{
                         res.json(400).json({
                             status : false,
@@ -596,7 +621,7 @@ const update_user_info = [
                     logger('Uploaded file has an unsupported mimetype');
                     res.json(400).json({
                         status : false,
-                        error : {result : 'Unsupported file type.'}
+                        error : {delete_image : 'Unsupported file type.'}
                     })
                     return;
                 }
@@ -604,7 +629,7 @@ const update_user_info = [
 
             if (req.body.delete_image){
                 logger('Attempting to delete upload image.');
-                if (!fileService.deleteImage(req.file.path, logger)){
+                if (req.file && !fileService.deleteImage(req.file.path, logger)){
                     res.json(400).json({
                         status : false,
                         error : {result : 'Something went wrong.'}
