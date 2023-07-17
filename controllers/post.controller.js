@@ -376,7 +376,7 @@ const update_comment = [
             res.json({
                 status : true,
                 message : "Comment updated.",
-                post
+                comment
             });
         }
     )
