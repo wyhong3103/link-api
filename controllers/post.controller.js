@@ -124,7 +124,8 @@ const create_post = [
 
             res.json({
                 status : true,
-                message : "Post is created."
+                message : "Post is created.",
+                post
             });
         }
     )
@@ -181,7 +182,8 @@ const update_post = [
 
             res.json({
                 status : true,
-                message : "Post is updated."
+                message : "Post is updated.",
+                post
             });
         }
     )
@@ -233,7 +235,8 @@ const like_post = asyncHandler(
 
         res.json({
             status : true,
-            message : "Like is sent."
+            message : "Like is sent.",
+            post
         })
     }
 )
@@ -250,7 +253,8 @@ const unlike_post = asyncHandler(
 
         res.json({
             status : true,
-            message : "Like is retracted."
+            message : "Like is retracted.",
+            post
         })
     }
 )
@@ -299,7 +303,8 @@ const comment_post = [
             await post.save();
             res.json({
                 status : true,
-                message : "Comment posted."
+                message : "Comment posted.",
+                post
             });
         }
     )
@@ -370,7 +375,8 @@ const update_comment = [
             await comment.save();
             res.json({
                 status : true,
-                message : "Comment updated."
+                message : "Comment updated.",
+                post
             });
         }
     )
@@ -417,7 +423,8 @@ const delete_comment = asyncHandler(
 
         res.json({
             status : true,
-            message : "Comment is removed."
+            message : "Comment is removed.",
+            post
         });
     }
 )
