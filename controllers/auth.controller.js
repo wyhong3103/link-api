@@ -93,7 +93,11 @@ const logout = asyncHandler(
 
 
 const refresh = asyncHandler(
-    async (req, res) => {
+    async (req, res, next) => {
+        if (!req.refresh){
+            next()
+            return;
+        }
         if (Object.hasOwnProperty.bind(req.cookies)('refreshToken')){
             const token = req.cookies.refreshToken;
 
@@ -123,9 +127,9 @@ const refresh = asyncHandler(
         }else{
             logger('Refresh token is not found in the cookies.')
 
-            res.status(404).json({
+            res.status(403).json({
                 status : false,
-                error : { result : 'Refresh token is invalid'}
+                error : { result : 'Please log in.'}
             })
         }
     }

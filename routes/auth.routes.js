@@ -24,21 +24,6 @@ router.post('/logout', authController.logout);
 
 Input :
 
-cookie : {
-    refreshToken
-}
-
-Output :
-
-accessToken
-
-*/
-router.get('/refresh', authController.refresh);
-
-/*
-
-Input :
-
 body : {
     email, password, repassword, first_name, last_Name
 }
@@ -80,6 +65,6 @@ body : {
 */
 router.post('/verify-reset-password', authController.verify_reset_password);
 
-router.get('/get-status', authorizeUser, authController.get_auth_status)
+router.get('/get-status', authorizeUser, authController.refresh, authController.get_auth_status)
 
 module.exports = router;
