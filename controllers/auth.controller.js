@@ -355,6 +355,7 @@ const verify_reset_password = [
 
 const get_auth_status = asyncHandler(
     async (req, res) => {
+        logger('User is authenticated.');
         const name = (await User.findById(req.userid).select('first_name last_name'))
         res.json({
             status : true,
