@@ -15,7 +15,10 @@ const insertMessage = async (user1, user2, message) => {
 
     if (chat === null){
         chat = new Chat({
-            room : getRoomID(user1, user2)
+            room : getRoomID(user2, user2),
+            users : [
+                user1, user2
+            ]
         });
     }
 
