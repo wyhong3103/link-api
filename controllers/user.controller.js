@@ -67,10 +67,11 @@ const partial_search_users = asyncHandler(
         }
 
         let result = [];
+        const clean_keyword = (keyword.toLowerCase().replace(/\s/g, ''));
 
         for(const user of ret){
-            const full_name = `${user.first_name} ${user.last_name}`;
-            const n = keyword.length;
+            const full_name = (`${user.first_name}${user.last_name}`.toLowerCase().replace(/\s/g, ''));
+            const n = clean_keyword.length;
             const m = full_name.length;
 
             const dp = [];
@@ -88,8 +89,8 @@ const partial_search_users = asyncHandler(
             for(let i = 0; i < n; i++){
                 for(let j = 0; j < m; j++){
                     if (!i && !j){
-                        dp[i][j] = (keyword[i] === full_name[j] ? 0 : 1);
-                    }else if (keyword[i] === full_name[j]){
+                        dp[i][j] = (clean_keyword[i] === full_name[j] ? 0 : 1);
+                    }else if (clean_keyword[i] === full_name[j]){
                         dp[i][j] = (!i ? j : (!j ? i : dp[i-1][j-1]));
                     }else{
                         dp[i][j] = Math.min(
@@ -101,7 +102,9 @@ const partial_search_users = asyncHandler(
                 }
             }
 
-            result.push([dp[n-1][m-1], user]);
+            if (dp[n-1][m-1] / Math.max(clean_keyword.length, full_name.length) * 100 <= 65){
+                result.push([dp[n-1][m-1] / Math.max(clean_keyword.length, full_name.length) * 100 , user]);
+            }
         }
 
         result.sort((a,b) => a[0] - b[0]);
