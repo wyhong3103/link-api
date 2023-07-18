@@ -12,6 +12,7 @@ Output {
 }
 
 */
+router.get('/', authMiddleware.authorizeUser, chatController.get_chats);
 router.get('/:roomid', authMiddleware.authorizeUser, chatController.get_chat);
 
 module.exports = router;

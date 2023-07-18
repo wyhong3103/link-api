@@ -6,6 +6,49 @@ const User = require('../models/user');
 const asyncHandler = require('express-async-handler');
 const chatService = require('../services/chat.service');
 
+const get_chats = asyncHandler(
+    async (req, res) => {
+        const chat = await Chat.find({ users : { $elemMatch: { $eq: req.userid } } })
+        .populate({
+            path : "messages",
+            select : 'date'
+        })
+        .populate({
+            path : "users",
+            select : "_id first_name last_name image"
+        })
+        .exec();
+
+        if (chat === null){
+            logger('Users have no chat record.');
+            res.json({
+                status : true,
+                chats : []
+            })
+            return;
+        }
+
+        const ret = [];
+
+        for(const i of chats){
+            if (!i.messages.length) continue;
+            ret.push({
+                user : (i.users[0]._id.toString() === req.userid ? i.users[1] : i.users[0]),
+                date : i.messages[i.messages.length - 1].date
+            })
+        }
+
+        ret.sort((a, b) => b.date - a.date);
+
+        logger('User chats are returned.');
+
+        res.json({
+            status : true,
+            chats : ret
+        })
+    }
+)
+
 const get_chat = asyncHandler(
     async (req, res) => {
         const users = req.params.roomid.split(',');
@@ -63,6 +106,7 @@ const get_chat = asyncHandler(
             logger('Users have no chat record.');
             res.json({
                 status : true,
+                user : (user1._id.toString() === req.userid ? user2 : user1),
                 messages : []
             })
             return;
@@ -70,6 +114,7 @@ const get_chat = asyncHandler(
         logger('Users chat is returned.');
         res.json({
             status : true,
+            user : (user1._id.toString() === req.userid ? user2 : user1),
             messages : chat.messages
         })
 
@@ -77,5 +122,6 @@ const get_chat = asyncHandler(
 )
 
 module.exports = {
+    get_chats,
     get_chat
 }
