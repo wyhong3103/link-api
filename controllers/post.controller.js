@@ -72,8 +72,7 @@ const get_posts = asyncHandler(
 const create_post = [
     body("content", "Content length should be within 1 to 30000 characters")
     .trim()
-    .isLength({min : 1, max : 30000})
-    .escape(),
+    .isLength({min : 1, max : 30000}),
     body("markdown", "markdown should be a boolean value.")
     .isBoolean(),
     body("math", "math should be a boolean value.")
@@ -134,8 +133,7 @@ const create_post = [
 const update_post = [
     body("content", "Content length should be within 1 to 30000 characters")
     .trim()
-    .isLength({min : 1, max : 30000})
-    .escape(),
+    .isLength({min : 1, max : 30000}),
     body("markdown", "markdown should be a boolean value.")
     .isBoolean(),
     body("math", "math should be a boolean value.")
@@ -172,8 +170,9 @@ const update_post = [
             }
 
             post.content = req.body.content;
-            post.markdown = req.body.markdown === 'true';
-            post.math = req.body.math === 'true';
+            post.markdown = req.body.markdown;
+            post.math = req.body.math;
+            console.log(post, req.body);
 
             await user.save();
             await post.save();
@@ -258,8 +257,7 @@ const unlike_post = asyncHandler(
 const comment_post = [
     body("content", "Content length should be within 1 to 8000 characters")
     .trim()
-    .isLength({min : 1 , max : 8000})
-    .escape(),
+    .isLength({min : 1 , max : 8000}),
     body("markdown")
     .isBoolean(),
     body("math")
@@ -308,8 +306,7 @@ const comment_post = [
 const update_comment = [
     body("content", "Content length should be within 1 to 8000 characters")
     .trim()
-    .isLength({min : 1 , max : 8000})
-    .escape(),
+    .isLength({min : 1 , max : 8000}),
     body("markdown")
     .isBoolean(),
     body("math")

@@ -113,7 +113,7 @@ describe("Post Controller Test", () => {
         const res1 = 
         await agent
         .post('/post')
-        .send({"content" : "test", "markdown" : "false", "math" : "true"});
+        .send({"content" : "test", "markdown" : false, "math" : true});
 
         const userA = await User.findOne({email : "user_a@test.com"}).exec();
         
@@ -122,6 +122,15 @@ describe("Post Controller Test", () => {
         .get(`/user/${userA._id}`)
 
         expect(res2.body.user.posts).toHaveLength(2);
+        expect(res2.body.user.posts[1]).toEqual(
+            expect.objectContaining(
+                {
+                    content : "test",
+                    markdown : false,
+                    math : true
+                }
+            )
+        )
     })    
     
     test("A: Get all posts", async () => {
@@ -143,7 +152,7 @@ describe("Post Controller Test", () => {
         const res2 = 
         await agent
         .put(`/post/${post_id}`)
-        .send({"content" : "updated content", "markdown" : "true", "math" : "true"});
+        .send({"content" : "updated content", "markdown" : true, "math" : true});
 
         expect(res2.status).toEqual(200);
 

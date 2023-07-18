@@ -431,7 +431,8 @@ describe("User Controller Test", () => {
         .send(
             {
                 first_name : "User",
-                last_name : "a"
+                last_name : "a",
+                delete_image : false
             }
         )
 
