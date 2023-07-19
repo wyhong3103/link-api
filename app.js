@@ -1,4 +1,6 @@
 const express = require('express');
+const compression = require("compression");
+const helmet = require("helmet");
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
@@ -23,6 +25,15 @@ async function main(){
 
 const app = express();
 
+const RateLimit = require("express-rate-limit");
+const limiter = RateLimit({
+  windowMs: 1 * 60 * 1000, 
+  max: 120,
+});
+
+app.use(limiter);
+app.use(compression());
+app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(cors(
     {
         origin : process.env.CLIENT_URL,
