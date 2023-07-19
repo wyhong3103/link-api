@@ -18,6 +18,12 @@ userid, accessToken, refreshToken
 */
 router.post('/login', authController.login);
 
+/*
+
+Log Out, delete access & refresh token
+
+*/
+
 router.post('/logout', authController.logout);
 
 /*
