@@ -29,6 +29,8 @@ const get_users = asyncHandler(
             ret.push(temp);
         }
 
+        ret.sort((a,b) => (`${a.first_name} ${a.last_name}`.toLowerCase() > `${b.first_name} ${b.last_name}`.toLowerCase() ? 1 : -1));
+
         res.json({
             users : ret
         });
