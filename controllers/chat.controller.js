@@ -30,7 +30,7 @@ const get_chats = asyncHandler(
 
         const ret = [];
 
-        for(const i of chats){
+        for(const i of chat){
             if (!i.messages.length) continue;
             ret.push({
                 user : (i.users[0]._id.toString() === req.userid ? i.users[1] : i.users[0]),

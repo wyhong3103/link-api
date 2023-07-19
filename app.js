@@ -4,8 +4,8 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('./chat-socket');
 require('dotenv').config();
+require('./chat-socket');
 
 const indexRouter = require('./routes/index');
 
