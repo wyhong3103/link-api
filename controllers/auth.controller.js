@@ -57,8 +57,8 @@ const login = [
 
                 await token.save();
                 
-                res.cookie('accessToken', authService.generateToken({userid : user._id}, 'access'), {maxAge : 3600000, httpOnly : true});
-                res.cookie('refreshToken',refreshToken, {maxAge : 720 * 3600000, httpOnly : true});
+                res.cookie('accessToken', authService.generateToken({userid : user._id}, 'access'), {maxAge : 3600000, httpOnly : true, sameSite : 'none'});
+                res.cookie('refreshToken',refreshToken, {maxAge : 720 * 3600000, httpOnly : true, sameSite : 'none'});
                 logger('Cookies are set.');
                 res.json(
                     {
@@ -103,8 +103,8 @@ const dummy = asyncHandler(
 
         await token.save();
         
-        res.cookie('accessToken', authService.generateToken({userid : user._id}, 'access'), {maxAge : 3600000, httpOnly : true});
-        res.cookie('refreshToken',refreshToken, {maxAge : 720 * 3600000, httpOnly : true});
+        res.cookie('accessToken', authService.generateToken({userid : user._id}, 'access'), {maxAge : 3600000, httpOnly : true, sameSite : 'none'});
+        res.cookie('refreshToken',refreshToken, {maxAge : 720 * 3600000, httpOnly : true, sameSite : 'none'});
         logger('Cookies are set.');
         res.json(
             {
@@ -116,9 +116,9 @@ const dummy = asyncHandler(
 
 const logout = asyncHandler(
     async (req,res) => {
-        res.clearCookie('accessToken');
+        res.clearCookie('accessToken', {sameSite : 'none'});
         await Token.deleteOne({token : req.refreshToken}).exec();
-        res.clearCookie('refreshToken');
+        res.clearCookie('refreshToken', {sameSite : 'none'});
         logger('Acess token and refresh token is removed from cookies if there is any.')
         res.json({
             status : true,
@@ -152,7 +152,7 @@ const refresh = asyncHandler(
             }
 
             logger('New access token is generated and set to cookie.')
-            res.cookie('accessToken', authService.generateToken({userid : result.decoded.userid}, 'access'), {maxAge : 3600000, httpOnly : true});
+            res.cookie('accessToken', authService.generateToken({userid : result.decoded.userid}, 'access'), {maxAge : 3600000, httpOnly : true, sameSite : 'none'});
             const name = (await User.findById(result.decoded.userid).select('first_name last_name'))
             res.json({
                 status : true,
