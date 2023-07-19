@@ -78,6 +78,42 @@ const login = [
     )
 ]
 
+
+const dummy = asyncHandler(
+    async (req, res) => {
+        const user = await User.findById(process.env.DUMMY_ID).exec();
+
+        if (user === null){
+            logger('Email is not found.');
+            res.status(404).json({
+                status : false,
+                error : { result : 'Email not found.'}
+            })
+            return;
+        }
+
+        const refreshToken = authService.generateToken({userid : user._id}, 'refresh');
+
+        const token = new Token({
+            token : refreshToken,
+            token_type : 'refresh',
+            user : user._id,
+            expiresAt : new Date(Date.now() + (30 * 24 * 60 * 60 * 1000))
+        })
+
+        await token.save();
+        
+        res.cookie('accessToken', authService.generateToken({userid : user._id}, 'access'), {maxAge : 3600000, httpOnly : true});
+        res.cookie('refreshToken',refreshToken, {maxAge : 720 * 3600000, httpOnly : true});
+        logger('Cookies are set.');
+        res.json(
+            {
+                userid : user._id,
+            }
+        )
+    }
+)
+
 const logout = asyncHandler(
     async (req,res) => {
         res.clearCookie('accessToken');
@@ -367,6 +403,7 @@ const get_auth_status = asyncHandler(
 
 module.exports = {
     login,
+    dummy,
     logout,
     refresh,
     register,

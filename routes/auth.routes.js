@@ -20,6 +20,14 @@ router.post('/login', authController.login);
 
 /*
 
+Login to dummy account
+
+*/
+
+router.get('/dummy',authController.dummy);
+
+/*
+
 Log Out, delete access & refresh token
 
 */
@@ -72,5 +80,6 @@ body : {
 router.post('/verify-reset-password', authController.verify_reset_password);
 
 router.get('/get-status', authorizeUser, authController.refresh, authController.get_auth_status)
+
 
 module.exports = router;
