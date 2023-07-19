@@ -21,6 +21,19 @@ app.set('port', port);
 
 var server = http.createServer(app);
 
+var io = require('socket.io')(server,
+    {
+        cors: {
+            origin : [process.env.CLIENT_URL],
+            credentials: true,
+        }
+    }
+)
+
+const chat_socket = require('../chat-socket');
+
+chat_socket(io);
+
 /**
  * Listen on provided port, on all network interfaces.
  */
